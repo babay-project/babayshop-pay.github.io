@@ -12,32 +12,44 @@
     /* ==================== 1. DESIGN TOKENS ==================== */
     :root {
       color-scheme: dark;
-      --bg: #242424;
-      --surface: rgba(31, 31, 31, .88);
-      --surface-strong: #222;
-      --surface-soft: #303030;
-      --line: rgba(255, 255, 255, .10);
+      --bg: #141416;
+      --surface: rgba(28, 28, 31, .92);
+      --surface-strong: #1c1c1f;
+      --surface-soft: #2a2a2e;
+      --line: rgba(255, 255, 255, .11);
+      --line-hover: rgba(255, 255, 255, .28);
       --text: #fafafa;
       --muted: #a1a1aa;
-      --accent: #f2f2f2;
-      --accent-dark: #bdbdbd;
-      --radius-lg: 28px;
-      --radius-md: 18px;
-      --shadow: 0 24px 80px rgba(0, 0, 0, .45);
+      --accent: #f4f4f5;
+      --accent-dark: #d4d4d8;
+      --success: #22c55e;
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .5);
     }
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
       overflow-x: hidden;
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 14% 16%, #555 0, transparent 34rem),
-        radial-gradient(circle at 90% 88%, #3d3d3d 0, transparent 36rem),
-        linear-gradient(145deg, #303030 0%, #222 48%, #292929 100%);
+        radial-gradient(circle at 14% 12%, rgba(95, 95, 105, .38) 0, transparent 32rem),
+        radial-gradient(circle at 88% 85%, rgba(65, 65, 75, .35) 0, transparent 34rem),
+        linear-gradient(155deg, #26262a 0%, #17171a 50%, #1f1f23 100%);
       background-attachment: fixed;
     }
 
@@ -47,66 +59,131 @@
       z-index: -1;
       content: "";
       pointer-events: none;
-      opacity: .68;
+      opacity: .55;
       background-image:
-        linear-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, .08) 1px, transparent 1px);
-      background-size: 34px 34px;
+        linear-gradient(rgba(255, 255, 255, .06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .06) 1px, transparent 1px);
+      background-size: 32px 32px;
     }
 
-    button, a { font: inherit; }
-    button { color: inherit; }
-    img { display: block; max-width: 100%; }
-    h1, h2, p { margin: 0; }
+    button, a {
+      font: inherit;
+      touch-action: manipulation;
+    }
 
-    /* ==================== 2. LAYOUT ==================== */
+    button {
+      color: inherit;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    /* ==================== 2. LAYOUT & HEADER ==================== */
     .app-shell {
-      width: min(720px, 100%);
-      min-height: 100vh;
+      width: min(680px, 100%);
+      min-height: 100dvh;
       margin: 0 auto;
-      padding: 28px 18px 116px;
+      padding: max(18px, env(safe-area-inset-top)) 16px calc(112px + env(safe-area-inset-bottom));
     }
 
     .hero {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 22px;
-      padding: 0 4px;
-      animation: enter .55s ease both;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(24, 24, 27, .75);
+      backdrop-filter: blur(16px);
+      animation: enter .5s ease both;
     }
 
-    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
     .brand-logo {
-      width: 46px;
-      height: 46px;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
       padding: 3px;
       border: 1px solid var(--line);
-      border-radius: 14px;
-      background: white;
+      border-radius: 13px;
+      background: #fff;
       object-fit: contain;
     }
-    .brand small, .security-label { color: var(--muted); font-size: 12px; }
-    .brand strong { display: block; margin-top: 2px; font-size: 15px; }
-    .security-label { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
-    .security-label::before {
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .02em;
+    }
+
+    .brand strong {
+      display: block;
+      margin-top: 1px;
+      font-size: 15px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .method-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .06);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background .2s ease, border-color .2s ease, transform .15s ease;
+    }
+
+    .method-trigger:hover {
+      background: rgba(255, 255, 255, .12);
+      border-color: var(--line-hover);
+    }
+
+    .method-trigger:active {
+      transform: scale(.96);
+    }
+
+    .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 14px var(--accent);
-      content: "";
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
     }
 
+    /* ==================== 3. MAIN CARD ==================== */
     .payment-card {
       position: relative;
-      min-height: 610px;
       overflow: hidden;
-      padding: clamp(24px, 5vw, 42px);
+      padding: clamp(22px, 5vw, 38px);
       border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: linear-gradient(145deg, rgba(34, 34, 34, .94), rgba(18, 18, 18, .96));
+      border-radius: var(--radius-xl);
+      background: linear-gradient(155deg, rgba(34, 34, 38, .95), rgba(18, 18, 21, .97));
       box-shadow: var(--shadow);
       backdrop-filter: blur(20px);
     }
@@ -115,107 +192,254 @@
       position: absolute;
       top: -110px;
       right: -110px;
-      width: 280px;
-      height: 280px;
+      width: 260px;
+      height: 260px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, .07);
-      filter: blur(8px);
+      background: rgba(255, 255, 255, .06);
+      filter: blur(12px);
       content: "";
       pointer-events: none;
     }
 
-    .view { position: relative; z-index: 1; animation: enter .38s ease both; }
-    .view-header { margin-bottom: 30px; text-align: center; }
+    .view {
+      position: relative;
+      z-index: 1;
+      animation: enter .35s ease both;
+    }
+
+    .view-header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
     .eyebrow {
       display: inline-flex;
-      margin-bottom: 12px;
-      padding: 7px 12px;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding: 6px 12px;
       border: 1px solid var(--line);
       border-radius: 999px;
+      background: rgba(255, 255, 255, .05);
       color: #fff;
       font-size: 11px;
       font-weight: 800;
-      letter-spacing: .14em;
+      letter-spacing: .12em;
     }
-    .view-header h1 { font-size: clamp(30px, 7vw, 48px); letter-spacing: -.055em; }
-    .view-header p { margin-top: 9px; color: var(--muted); font-size: 14px; line-height: 1.6; }
 
-    /* ==================== 3. QRIS ==================== */
+    .view-header h1 {
+      font-size: clamp(26px, 6.5vw, 42px);
+      letter-spacing: -.04em;
+      line-height: 1.15;
+    }
+
+    .view-header p {
+      max-width: 440px;
+      margin: 8px auto 0;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    /* ==================== 4. QRIS VIEW ==================== */
     .qris-layout {
       display: grid;
-      grid-template-columns: minmax(220px, 310px) 1fr;
+      grid-template-columns: minmax(220px, 280px) 1fr;
       align-items: center;
       justify-content: center;
-      gap: clamp(24px, 6vw, 46px);
+      gap: clamp(20px, 5vw, 40px);
     }
+
     .qris-box {
       position: relative;
+      margin: 0 auto;
       padding: 12px;
-      border-radius: 24px;
-      background: white;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, .4);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
     }
+
     .qris-box::before {
       position: absolute;
       inset: -5px;
       z-index: -1;
-      border: 1px solid rgba(255, 255, 255, .46);
-      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, .42);
+      border-radius: 26px;
       content: "";
       animation: glow 2.6s ease-in-out infinite;
     }
-    .qris-box img { width: 100%; aspect-ratio: 1; border-radius: 14px; object-fit: contain; }
-    .instruction h2 { margin-bottom: 10px; font-size: 25px; letter-spacing: -.03em; }
-    .instruction p { color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+    .qris-box img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 14px;
+      object-fit: contain;
+    }
+
+    .instruction h2 {
+      margin-bottom: 8px;
+      font-size: 22px;
+      letter-spacing: -.02em;
+    }
+
+    .instruction p {
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .steps-list {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+      text-align: left;
+    }
+
+    .steps-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .03);
+      font-size: 12.5px;
+      color: #d4d4d8;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .14);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+    }
 
     .owner-box {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-top: 22px;
-      padding: 15px;
-      border: 1px solid rgba(255, 255, 255, .16);
+      margin-top: 18px;
+      padding: 13px 15px;
+      border: 1px solid rgba(255, 255, 255, .15);
       border-radius: 15px;
-      background: rgba(255, 255, 255, .06);
+      background: rgba(255, 255, 255, .055);
+      text-align: left;
     }
-    .owner-icon { font-size: 22px; }
-    .owner-box small { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; letter-spacing: .1em; }
-    .owner-box strong { font-size: 13px; }
 
-    /* ==================== 4. PAYMENT ACCOUNTS ==================== */
-    .account-list { display: grid; gap: 12px; }
+    .owner-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      background: rgba(34, 197, 94, .18);
+      color: #4ade80;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .owner-box small {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .09em;
+    }
+
+    .owner-box strong {
+      font-size: 13.5px;
+    }
+
+    /* ==================== 5. PAYMENT ACCOUNTS ==================== */
+    .account-list {
+      display: grid;
+      gap: 11px;
+    }
+
     .account {
       display: grid;
-      grid-template-columns: 52px 1fr auto;
+      grid-template-columns: 50px 1fr auto;
       align-items: center;
-      gap: 14px;
+      gap: 13px;
       padding: 13px;
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
       background: rgba(255, 255, 255, .035);
       transition: border-color .2s ease, transform .2s ease, background .2s ease;
     }
+
     .account:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, .34);
-      background: rgba(255, 255, 255, .055);
+      border-color: var(--line-hover);
+      background: rgba(255, 255, 255, .06);
     }
+
     .account-logo {
-      width: 52px;
-      height: 52px;
+      width: 50px;
+      height: 50px;
       padding: 6px;
-      border-radius: 14px;
-      background: white;
+      border-radius: 13px;
+      background: #fff;
       object-fit: contain;
     }
-    .account-name { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .account-name strong { font-size: 14px; }
-    .bank-code { color: var(--muted); font-size: 10px; }
-    .account-number { font-size: 14px; font-weight: 800; letter-spacing: .04em; }
-    .account-owner { margin-top: 4px; color: var(--muted); font-size: 11px; }
+
+    .account-info {
+      min-width: 0;
+    }
+
+    .account-name {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .account-name strong {
+      font-size: 14px;
+    }
+
+    .bank-code {
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .08);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .account-number {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      font-variant-numeric: tabular-nums;
+      word-break: break-all;
+    }
+
+    .account-owner {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
     .copy-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       min-height: 42px;
-      padding: 0 16px;
+      padding: 0 15px;
       border: 0;
       border-radius: 12px;
       background: var(--text);
@@ -223,138 +447,486 @@
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
-      transition: transform .15s ease, background .15s ease;
+      transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
     }
-    .copy-button:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 8px 18px rgba(0, 0, 0, .42); }
-    .copy-button:active { transform: scale(.96); }
 
-    /* ==================== 5. ADMIN ==================== */
-    .admin-panel { max-width: 390px; margin: 72px auto 0; text-align: center; }
+    .copy-button:hover {
+      background: #fff;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .4);
+    }
+
+    .copy-button:active {
+      transform: scale(.95);
+    }
+
+    .copy-button.copied {
+      background: var(--success);
+      color: #052e16;
+    }
+
+    /* ==================== 6. ADMIN VIEW ==================== */
+    .admin-panel {
+      max-width: 380px;
+      margin: 24px auto 8px;
+      padding: 26px 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, .03);
+      text-align: center;
+    }
+
     .admin-logo {
-      width: 88px;
-      height: 88px;
-      margin: 0 auto 20px;
+      width: 82px;
+      height: 82px;
+      margin: 0 auto 16px;
       padding: 6px;
-      border-radius: 26px;
-      background: white;
+      border-radius: 24px;
+      background: #fff;
       object-fit: contain;
     }
-    .admin-panel h2 { font-size: 28px; }
-    .admin-phone { display: block; margin: 10px 0; font-size: 19px; }
-    .admin-panel p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    .admin-panel h2 {
+      font-size: 24px;
+    }
+
+    .admin-phone {
+      display: block;
+      margin: 8px 0;
+      font-size: 18px;
+      letter-spacing: .03em;
+    }
+
+    .admin-panel p {
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
     .whatsapp-button {
       display: inline-flex;
-      margin-top: 22px;
-      padding: 13px 22px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 260px;
+      min-height: 46px;
+      margin-top: 20px;
+      padding: 12px 22px;
       border-radius: 999px;
       background: var(--accent);
       color: #111;
       font-size: 13px;
-      font-weight: 850;
+      font-weight: 800;
       text-decoration: none;
       transition: transform .2s ease, box-shadow .2s ease;
     }
-    .whatsapp-button:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0, 0, 0, .35); }
 
-    /* ==================== 6. BOTTOM NAVIGATION ==================== */
+    .whatsapp-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .35);
+    }
+
+    /* ==================== 7. BOTTOM NAVIGATION ==================== */
     .bottom-nav {
       position: fixed;
       bottom: max(12px, env(safe-area-inset-bottom));
       left: 50%;
-      z-index: 10;
+      z-index: 20;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      width: min(680px, calc(100% - 24px));
-      padding: 8px;
+      gap: 6px;
+      width: min(648px, calc(100% - 24px));
+      padding: 7px;
       border: 1px solid var(--line);
       border-radius: 20px;
-      background: rgba(16, 16, 18, .86);
-      box-shadow: 0 16px 42px rgba(0, 0, 0, .5);
+      background: rgba(16, 16, 19, .9);
+      box-shadow: 0 16px 42px rgba(0, 0, 0, .55);
       backdrop-filter: blur(22px);
       transform: translateX(-50%);
     }
+
     .nav-button {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      min-height: 48px;
-      border: 0;
-      border-radius: 13px;
-      border: 1px solid #454545;
-      background: linear-gradient(180deg, #373737, #242424);
+      gap: 4px;
+      min-height: 52px;
+      padding: 6px 4px;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #323236, #222225);
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
+      letter-spacing: .03em;
       cursor: pointer;
-      box-shadow: inset 0 1px rgba(255, 255, 255, .12), inset 0 -3px 7px rgba(0, 0, 0, .5), 0 5px 10px rgba(0, 0, 0, .28);
-      text-shadow: 0 1px 2px #000;
-      transition: color .2s ease, background .2s ease, transform .15s ease, box-shadow .15s ease;
+      box-shadow: inset 0 1px rgba(255, 255, 255, .1), 0 4px 8px rgba(0, 0, 0, .25);
+      transition: color .2s ease, background .2s ease, transform .15s ease, border-color .2s ease;
     }
-    .nav-button:hover { color: var(--text); background: linear-gradient(180deg, #454545, #292929); transform: translateY(-2px); }
-    .nav-button:active { transform: translateY(2px); box-shadow: inset 0 4px 9px rgba(0, 0, 0, .62); }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2.1;
+    }
+
+    .nav-button:hover {
+      color: var(--text);
+      background: linear-gradient(180deg, #3f3f45, #27272b);
+    }
+
+    .nav-button:active {
+      transform: scale(.96);
+    }
+
     .nav-button.active {
       color: #111;
       border-color: #fff;
-      background: linear-gradient(180deg, #f4f4f4, #cfcfcf);
-      box-shadow: inset 0 1px #fff, inset 0 -3px 6px rgba(0, 0, 0, .18), 0 4px 12px rgba(0, 0, 0, .4);
-      text-shadow: none;
+      background: linear-gradient(180deg, #ffffff, #d4d4d8);
+      box-shadow: inset 0 1px #fff, 0 4px 14px rgba(255, 255, 255, .18);
     }
 
-    .toast {
+    /* ==================== 8. POPUP MODAL PILIH METODE ==================== */
+    .modal-backdrop {
       position: fixed;
-      bottom: 88px;
-      left: 50%;
-      z-index: 20;
-      padding: 12px 17px;
-      border-radius: 12px;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(8, 8, 10, .78);
+      backdrop-filter: blur(14px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-sheet {
+      position: relative;
+      width: min(430px, 100%);
+      max-height: 92dvh;
+      overflow-y: auto;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, .1), transparent 65%),
+        linear-gradient(165deg, #27272b 0%, #161619 100%);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, .75);
+      transform: translateY(24px) scale(.96);
+      transition: transform .32s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .modal-backdrop.open .modal-sheet {
+      transform: translateY(0) scale(1);
+    }
+
+    .sheet-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .sheet-handle {
+      width: 44px;
+      height: 5px;
+      margin: 0 auto;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .24);
+    }
+
+    .modal-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      margin-left: auto;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .07);
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .2s ease, color .2s ease, transform .15s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, .15);
+      color: var(--text);
+    }
+
+    .modal-close:active {
+      transform: scale(.92);
+    }
+
+    .method-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .method-option {
+      position: relative;
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      min-height: 76px;
+      padding: 15px 16px;
+      border: 1px solid rgba(255, 255, 255, .13);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .025));
+      text-align: left;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+
+    .method-option:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, .38);
+      background: linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .05));
+      box-shadow: 0 12px 26px rgba(0, 0, 0, .38);
+    }
+
+    .method-option:active {
+      transform: scale(.97);
+    }
+
+    .method-icon-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .09);
+      color: #fff;
+    }
+
+    .method-icon-box svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .method-meta {
+      min-width: 0;
+    }
+
+    .method-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .method-title-row strong {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+    }
+
+    .method-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .14);
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+
+    .method-pill.recommended {
+      background: rgba(34, 197, 94, .22);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, .35);
+    }
+
+    .method-meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .method-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .08);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 800;
+      transition: transform .18s ease, background .18s ease;
+    }
+
+    .method-option:hover .method-arrow {
+      transform: translateX(3px);
       background: var(--text);
       color: #111;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
-      font-size: 12px;
+    }
+
+    /* ==================== 9. TOAST NOTIFICATION ==================== */
+    .toast {
+      position: fixed;
+      bottom: calc(88px + env(safe-area-inset-bottom));
+      left: 50%;
+      z-index: 60;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: var(--text);
+      color: #111;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .45);
+      font-size: 12.5px;
       font-weight: 800;
+      white-space: nowrap;
       opacity: 0;
       pointer-events: none;
       transform: translate(-50%, 14px);
       transition: opacity .22s ease, transform .22s ease;
     }
-    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
 
     @keyframes enter {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     @keyframes glow {
-      0%, 100% { opacity: .3; transform: scale(.99); }
-      50% { opacity: 1; transform: scale(1.015); }
+      0%, 100% {
+        opacity: .35;
+        transform: scale(.99);
+      }
+      50% {
+        opacity: .95;
+        transform: scale(1.015);
+      }
     }
 
-    /* ==================== 7. RESPONSIVE ==================== */
+    /* ==================== 10. MOBILE RESPONSIVE ==================== */
     @media (max-width: 620px) {
-      .app-shell { padding: 18px 12px 104px; }
-      .hero { margin-bottom: 15px; }
-      .security-label span { display: none; }
-      .payment-card { min-height: calc(100dvh - 160px); padding: 26px 17px; border-radius: 23px; }
-      .qris-layout { display: flex; flex-direction: column; }
-      .qris-box { width: min(295px, 90%); }
-      .instruction { width: 100%; text-align: center; }
-      .owner-box { justify-content: center; text-align: left; }
-      .account { grid-template-columns: 46px 1fr auto; gap: 10px; padding: 11px; }
-      .account-logo { width: 46px; height: 46px; }
-      .copy-button { padding: 0 12px; }
-      .nav-button { font-size: 9px; }
+      .app-shell {
+        padding: max(12px, env(safe-area-inset-top)) 12px calc(104px + env(safe-area-inset-bottom));
+      }
+
+      .hero {
+        margin-bottom: 14px;
+        padding: 9px 12px;
+      }
+
+      .payment-card {
+        padding: 22px 16px;
+        border-radius: 24px;
+      }
+
+      .view-header {
+        margin-bottom: 20px;
+      }
+
+      .qris-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .qris-box {
+        width: min(265px, 84%);
+      }
+
+      .instruction {
+        width: 100%;
+        text-align: center;
+      }
+
+      .account {
+        grid-template-columns: 46px 1fr auto;
+        gap: 11px;
+        padding: 12px;
+      }
+
+      .account-logo {
+        width: 46px;
+        height: 46px;
+      }
+
+      .account-number {
+        font-size: 14px;
+      }
+
+      .copy-button {
+        min-height: 40px;
+        padding: 0 13px;
+      }
+
+      /* Bottom sheet modal on mobile phones */
+      .modal-backdrop {
+        align-items: flex-end;
+        padding: 0;
+      }
+
+      .modal-sheet {
+        width: 100%;
+        max-height: 90dvh;
+        padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: 0;
+        transform: translateY(100%);
+      }
     }
 
-    @media (max-width: 390px) {
-      .brand small { display: none; }
-      .view-header { margin-bottom: 22px; }
-      .account { grid-template-columns: 42px 1fr; }
-      .account-logo { width: 42px; height: 42px; }
-      .copy-button { grid-column: 1 / -1; width: 100%; }
+    @media (max-width: 370px) {
+      .method-trigger span:not(.status-dot) {
+        font-size: 11px;
+      }
+
+      .account {
+        grid-template-columns: 42px 1fr;
+      }
+
+      .account-logo {
+        width: 42px;
+        height: 42px;
+      }
+
+      .copy-button {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation: none !important;
+        transition: none !important;
+      }
     }
   </style>
 </head>
@@ -364,9 +936,16 @@
     <header class="hero">
       <div class="brand">
         <img class="brand-logo" src="https://i.ibb.co.com/0jscDd0j/LOLO-BABAYSHOP-ID.png" alt="Logo BabayShop">
-        <div><small>Payment Center</small><strong>BabayShop.id</strong></div>
+        <div>
+          <small>Official Payment Center</small>
+          <strong>BabayShop.id</strong>
+        </div>
       </div>
-     
+
+      <button class="method-trigger" id="openModalBtn" type="button" aria-label="Pilih metode pembayaran">
+        <span class="status-dot"></span>
+        <span>Pilih Metode</span>
+      </button>
     </header>
 
     <section class="payment-card" aria-live="polite">
@@ -374,13 +953,106 @@
     </section>
   </main>
 
+  <!-- Navigasi Bawah -->
   <nav class="bottom-nav" aria-label="Metode pembayaran">
-    <button class="nav-button active" type="button" data-view="qris">QRIS</button>
-    <button class="nav-button" type="button" data-view="ewallet">E-WALLET</button>
-    <button class="nav-button" type="button" data-view="bank">BANK</button>
-    <button class="nav-button" type="button" data-view="admin">ADMIN</button>
+    <button class="nav-button active" type="button" data-view="qris">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+        <path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 19h2M19 14v2"></path>
+      </svg>
+      <span>QRIS</span>
+    </button>
+
+    <button class="nav-button" type="button" data-view="ewallet">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"></path>
+        <rect x="15" y="9" width="6" height="6" rx="1.5"></rect>
+      </svg>
+      <span>E-WALLET</span>
+    </button>
+
+    <button class="nav-button" type="button" data-view="bank">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"></path>
+      </svg>
+      <span>BANK</span>
+    </button>
+
+    <button class="nav-button" type="button" data-view="admin">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>ADMIN</span>
+    </button>
   </nav>
 
+  <!-- Pop-up Modal Pilih Metode Pembayaran -->
+  <div class="modal-backdrop open" id="methodModal" role="dialog" aria-modal="true" aria-label="Pilih metode pembayaran">
+    <div class="modal-sheet">
+      <div class="sheet-top">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <button class="modal-close" id="closeModalBtn" type="button" aria-label="Tutup pop up">✕</button>
+      </div>
+
+      <div class="method-grid">
+        <button class="method-option" type="button" data-select-method="qris">
+          <div class="method-icon-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+              <path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 19h2M19 14v2"></path>
+            </svg>
+          </div>
+          <div class="method-meta">
+            <div class="method-title-row">
+              <strong>QRIS</strong>
+              <span class="method-pill recommended">INSTANT</span>
+            </div>
+            <span>Scan semua M-Banking & E-Wallet</span>
+          </div>
+          <span class="method-arrow">→</span>
+        </button>
+
+        <button class="method-option" type="button" data-select-method="ewallet">
+          <div class="method-icon-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"></path>
+              <rect x="15" y="9" width="6" height="6" rx="1.5"></rect>
+            </svg>
+          </div>
+          <div class="method-meta">
+            <div class="method-title-row">
+              <strong>E-WALLET</strong>
+              <span class="method-pill">4 PILIHAN</span>
+            </div>
+            <span>GoPay, DANA, ShopeePay, LinkAja</span>
+          </div>
+          <span class="method-arrow">→</span>
+        </button>
+
+        <button class="method-option" type="button" data-select-method="bank">
+          <div class="method-icon-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"></path>
+            </svg>
+          </div>
+          <div class="method-meta">
+            <div class="method-title-row">
+              <strong>TRANSFER BANK</strong>
+              <span class="method-pill">2 REKENING</span>
+            </div>
+            <span>Bank Jago & SeaBank</span>
+          </div>
+          <span class="method-arrow">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifikasi Salin -->
   <div class="toast" id="toast" role="status">✓ Nomor berhasil disalin</div>
 
   <script>
@@ -392,42 +1064,100 @@
     const ADMIN_PHONE_WHATSAPP = "6281523984574";
 
     const ewalletAccounts = [
-      { name: "GoPay", number: "0882 1599 3544", copy: "088215993544", logo: "https://blogger.googleusercontent.com/img/a/AVvXsEgq3HaU8T7ZEEmljJuxypoDObOdQYkxB38dVJa1y89eUqFwHXe7kYE_y9xz5gv85e44cuMs0hLmUBXPRdf0VvYHlqZjgtYjCHmNFQjKc_5dZ3k67UOH2CmQAvtVOhDjgze941ZTwyehsrRDleoxR0Q-5fh-NtPMN0rVF77ObjtItBkc2rbEXboOgqD2nBcH" },
-      { name: "DANA", number: "0882 1599 3544", copy: "088215993544", logo: "https://blogger.googleusercontent.com/img/a/AVvXsEjXur82-Ithr--hcBvVeoVrnkXOOlMCyFMKGbK7vgciysVhk1v01In0Ss0l6u3B5mfSbcHi0kj8LyGqJKRwE_BgfPQFPq9xg_vIe9wUVsWSeIQZi6xaseE0GAnwl2n3nmJmbAcq2Ovr92JzZ663bH4ugSiF7FZ8BpKh09yRC-SJVAedJSSTmTB-EMZLMeWs" },
-      { name: "ShopeePay", number: "0882 1599 3544", copy: "088215993544", logo: "https://blogger.googleusercontent.com/img/a/AVvXsEgW7BuN7el3v1EBYrI4hZ6NOiMZ-PA4quG8Yf6Hg3fde69_r-XWtiikm-596QLg58iu0YnNcCWFzj4N0FF2lTd_G2ptYP9gHYrrZHndbmuKFctv54LQc-OaXlNP-by8vndGL-Vy9RZE2Yodw33u9lCdYzmMlDHvwRx4NltZBxasQT_yC5K9FbTkg5HwnJbi" },
-      { name: "LinkAja", number: "0882 1599 3544", copy: "088215993544", logo: "https://blogger.googleusercontent.com/img/a/AVvXsEi6_Dj1-t2itD5VXaskuXhDquciUjmUlBS_gO67JMRen5mZaT9YSiF7MKzB1LdfMlEDP1M50YcDpTPCuDMx64woMcTeG7PFw6czwoN4OPIB9do06uf0LkRDlVWPLa03shIrTWwZ-xG735lDTvu9pb6aGOX3jSdb_XNrNVMceTZafxwLTFCiNn8IJefrDI0L" }
+      {
+        name: "GoPay",
+        number: "0882 1599 3544",
+        copy: "088215993544",
+        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEgq3HaU8T7ZEEmljJuxypoDObOdQYkxB38dVJa1y89eUqFwHXe7kYE_y9xz5gv85e44cuMs0hLmUBXPRdf0VvYHlqZjgtYjCHmNFQjKc_5dZ3k67UOH2CmQAvtVOhDjgze941ZTwyehsrRDleoxR0Q-5fh-NtPMN0rVF77ObjtItBkc2rbEXboOgqD2nBcH"
+      },
+      {
+        name: "DANA",
+        number: "0882 1599 3544",
+        copy: "088215993544",
+        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEjXur82-Ithr--hcBvVeoVrnkXOOlMCyFMKGbK7vgciysVhk1v01In0Ss0l6u3B5mfSbcHi0kj8LyGqJKRwE_BgfPQFPq9xg_vIe9wUVsWSeIQZi6xaseE0GAnwl2n3nmJmbAcq2Ovr92JzZ663bH4ugSiF7FZ8BpKh09yRC-SJVAedJSSTmTB-EMZLMeWs"
+      },
+      {
+        name: "ShopeePay",
+        number: "0882 1599 3544",
+        copy: "088215993544",
+        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEgW7BuN7el3v1EBYrI4hZ6NOiMZ-PA4quG8Yf6Hg3fde69_r-XWtiikm-596QLg58iu0YnNcCWFzj4N0FF2lTd_G2ptYP9gHYrrZHndbmuKFctv54LQc-OaXlNP-by8vndGL-Vy9RZE2Yodw33u9lCdYzmMlDHvwRx4NltZBxasQT_yC5K9FbTkg5HwnJbi"
+      },
+      {
+        name: "LinkAja",
+        number: "0882 1599 3544",
+        copy: "088215993544",
+        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEi6_Dj1-t2itD5VXaskuXhDquciUjmUlBS_gO67JMRen5mZaT9YSiF7MKzB1LdfMlEDP1M50YcDpTPCuDMx64woMcTeG7PFw6czwoN4OPIB9do06uf0LkRDlVWPLa03shIrTWwZ-xG735lDTvu9pb6aGOX3jSdb_XNrNVMceTZafxwLTFCiNn8IJefrDI0L"
+      }
     ];
 
     const bankAccounts = [
-      { name: "Bank Jago", code: "Kode bank 542", number: "1006 4533 1871", copy: "100645331871", logo: "https://blogger.googleusercontent.com/img/a/AVvXsEicp5KjFo3ZeLilov-1mOt_bH5x-Wbb5Xslnu4BeGJFNC66xaJU6GzXP6V101Q7Jm4sLII7iJ-6towfvzPTenVDHKM3pSRUg-f3PbkDSSNnux45W1wVmNQiqntiBX8ifEuXNUuHquRa8z9lmM0t4ua8bL6_30bVOt5614DGMtNhseV3_X1pRe-7icK1lBWX" },
-      { name: "SeaBank", code: "Kode bank 535", number: "9013 7594 0437", copy: "901375940437", logo: "https://blogger.googleusercontent.com/img/a/AVvXsEi18PxWNHMFpvNCr707T_va5y6AkUoOnJkGJy7jXB3CwowK5DcSvDLANFHk9CEy8mthpHUtDVeRQkZXjNLTksJUPrfyoEdoK94WgLNaNmtTJ4Kq46BUxBJXCQACinJSgyRz0lc_1-XUt_EGr-O--Uwh86_h3XiV-axvrWON0HTeQoRtYVGSOI9tyzC8CxRO" }
+      {
+        name: "Bank Jago",
+        code: "Kode bank 542",
+        number: "1006 4533 1871",
+        copy: "100645331871",
+        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEicp5KjFo3ZeLilov-1mOt_bH5x-Wbb5Xslnu4BeGJFNC66xaJU6GzXP6V101Q7Jm4sLII7iJ-6towfvzPTenVDHKM3pSRUg-f3PbkDSSNnux45W1wVmNQiqntiBX8ifEuXNUuHquRa8z9lmM0t4ua8bL6_30bVOt5614DGMtNhseV3_X1pRe-7icK1lBWX"
+      },
+      {
+        name: "SeaBank",
+        code: "Kode bank 535",
+        number: "9013 7594 0437",
+        copy: "901375940437",
+        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEi18PxWNHMFpvNCr707T_va5y6AkUoOnJkGJy7jXB3CwowK5DcSvDLANFHk9CEy8mthpHUtDVeRQkZXjNLTksJUPrfyoEdoK94WgLNaNmtTJ4Kq46BUxBJXCQACinJSgyRz0lc_1-XUt_EGr-O--Uwh86_h3XiV-axvrWON0HTeQoRtYVGSOI9tyzC8CxRO"
+      }
     ];
 
     const content = document.querySelector("#content");
     const toast = document.querySelector("#toast");
+    const methodModal = document.querySelector("#methodModal");
+    let toastTimer = null;
 
     function viewHeader(label, title, description) {
-      return `<header class="view-header"><span class="eyebrow">${label}</span><h1>${title}</h1><p>${description}</p></header>`;
+      return `
+        <header class="view-header">
+          <span class="eyebrow">${label}</span>
+          <h1>${title}</h1>
+          <p>${description}</p>
+        </header>`;
     }
 
-     function ownerBox() {
-      return `<div class="owner-box"><span class="owner-icon">✓</span><div><small>SEMUA ATAS NAMA</small><strong>${OWNER_NAME}</strong></div></div>`;
+    function ownerBox() {
+      return `
+        <div class="owner-box">
+          <span class="owner-icon">✓</span>
+          <div>
+            <small>SEMUA ATAS NAMA</small>
+            <strong>${OWNER_NAME}</strong>
+          </div>
+        </div>`;
     }
 
     function qrisOwnerBox() {
-      return `<div class="owner-box"><span class="owner-icon">✓</span><div><small>ATAS NAMA QRIS</small><strong>Babayshop.id</strong></div></div>`;
+      return `
+        <div class="owner-box">
+          <span class="owner-icon">✓</span>
+          <div>
+            <small>ATAS NAMA QRIS</small>
+            <strong>Babayshop.id</strong>
+          </div>
+        </div>`;
     }
 
     function accountCard(account) {
       return `
         <article class="account">
           <img class="account-logo" src="${account.logo}" alt="Logo ${account.name}" loading="lazy">
-          <div>
-            <div class="account-name"><strong>${account.name}</strong>${account.code ? `<span class="bank-code">${account.code}</span>` : ""}</div>
+          <div class="account-info">
+            <div class="account-name">
+              <strong>${account.name}</strong>
+              ${account.code ? `<span class="bank-code">${account.code}</span>` : ""}
+            </div>
             <div class="account-number">${account.number}</div>
             <div class="account-owner">a.n. ${OWNER_NAME}</div>
           </div>
-          <button class="copy-button" type="button" data-copy="${account.copy}" aria-label="Salin nomor ${account.name}">Salin</button>
+          <button class="copy-button" type="button" data-copy="${account.copy}" data-label="${account.name}" aria-label="Salin nomor ${account.name}">
+            Salin
+          </button>
         </article>`;
     }
 
@@ -439,34 +1169,146 @@
       });
 
       if (view === "qris") {
-        content.innerHTML = `<div class="view">${viewHeader("QRIS", "Bayar lebih praktis", "Scan kode QR menggunakan aplikasi pembayaran pilihan Anda.")}<div class="qris-layout"><div class="qris-box"><img src="${QRIS_IMAGE}" alt="Kode QRIS BabayShop.id"></div><div class="instruction"><h2>Scan QRIS</h2><p>Buka aplikasi pembayaran, scan kode QR, lalu masukkan nominal sesuai transaksi.</p>${qrisOwnerBox()}</div></div></div>`;
+        content.innerHTML = `
+          <div class="view">
+            ${viewHeader("QRIS", "Bayar lebih praktis", "Scan kode QR menggunakan aplikasi m-banking atau e-wallet pilihan Anda.")}
+            <div class="qris-layout">
+              <div class="qris-box">
+                <img src="${QRIS_IMAGE}" alt="Kode QRIS BabayShop.id">
+              </div>
+              <div class="instruction">
+                <h2>Cara Bayar QRIS</h2>
+                <p>Buka aplikasi pembayaran di HP Anda, scan kode QR, lalu masukkan nominal sesuai transaksi.</p>
+                <ol class="steps-list">
+                  <li><span class="step-badge">1</span><span>Screenshot atau scan langsung kode QRIS</span></li>
+                  <li><span class="step-badge">2</span><span>Pastikan penerima <strong>Babayshop.id</strong></span></li>
+                  <li><span class="step-badge">3</span><span>Simpan bukti pembayaran Anda</span></li>
+                </ol>
+                ${qrisOwnerBox()}
+              </div>
+            </div>
+          </div>`;
       } else if (view === "ewallet" || view === "bank") {
         const isWallet = view === "ewallet";
         const accounts = isWallet ? ewalletAccounts : bankAccounts;
-        content.innerHTML = `<div class="view">${viewHeader(isWallet ? "E-WALLET" : "TRANSFER BANK", isWallet ? "Pilih e-wallet" : "Pilih rekening bank", `Pastikan nama penerima tercantum sebagai ${OWNER_NAME}.`)}<div class="account-list">${accounts.map(accountCard).join("")}</div>${ownerBox()}</div>`;
+        content.innerHTML = `
+          <div class="view">
+            ${viewHeader(
+              isWallet ? "E-WALLET" : "TRANSFER BANK",
+              isWallet ? "Pilih E-Wallet" : "Pilih Rekening Bank",
+              `Ketuk tombol Salin dan pastikan nama penerima tercantum sebagai ${OWNER_NAME}.`
+            )}
+            <div class="account-list">
+              ${accounts.map(accountCard).join("")}
+            </div>
+            ${ownerBox()}
+          </div>`;
       } else {
-        content.innerHTML = `<div class="view">${viewHeader("ADMIN", "Butuh bantuan?", "Hubungi admin resmi BabayShop.id untuk konfirmasi atau kendala pembayaran.")}<div class="admin-panel"><img class="admin-logo" src="${SHOP_LOGO}" alt="Logo BabayShop"><h2>Admin BabayShop</h2><strong class="admin-phone">${ADMIN_PHONE_DISPLAY}</strong><p>Kami siap membantu proses pembayaran Anda.</p><a class="whatsapp-button" href="https://wa.me/${ADMIN_PHONE_WHATSAPP}" target="_blank" rel="noopener noreferrer">Chat WhatsApp ↗</a></div></div>`;
+        content.innerHTML = `
+          <div class="view">
+            ${viewHeader("ADMIN", "Butuh bantuan?", "Hubungi admin resmi BabayShop.id untuk konfirmasi atau kendala pembayaran.")}
+            <div class="admin-panel">
+              <img class="admin-logo" src="${SHOP_LOGO}" alt="Logo BabayShop">
+              <h2>Admin BabayShop</h2>
+              <strong class="admin-phone">${ADMIN_PHONE_DISPLAY}</strong>
+              <p>Kami siap membantu verifikasi dan proses pembayaran Anda dengan cepat.</p>
+              <a class="whatsapp-button" href="https://wa.me/${ADMIN_PHONE_WHATSAPP}" target="_blank" rel="noopener noreferrer">
+                <span>Chat WhatsApp Sekarang</span>
+                <span>↗</span>
+              </a>
+            </div>
+          </div>`;
       }
 
-      history.replaceState(null, "", `#${view}`);
+      try {
+        history.replaceState(null, "", `#${view}`);
+      } catch (e) {}
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    async function copyNumber(button) {
+    function fallbackCopyText(text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
       try {
-        await navigator.clipboard.writeText(button.dataset.copy);
-        toast.classList.add("show");
-        window.setTimeout(() => toast.classList.remove("show"), 1800);
+        document.execCommand("copy");
+      } catch (e) {}
+      document.body.removeChild(textarea);
+    }
+
+    async function copyNumber(button) {
+      const numberToCopy = button.dataset.copy;
+      const label = button.dataset.label || "Rekening";
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(numberToCopy);
+        } else {
+          fallbackCopyText(numberToCopy);
+        }
       } catch {
-        window.prompt("Salin nomor berikut:", button.dataset.copy);
+        fallbackCopyText(numberToCopy);
       }
+
+      const originalText = button.textContent;
+      button.textContent = "Tersalin ✓";
+      button.classList.add("copied");
+      window.setTimeout(() => {
+        button.textContent = originalText;
+        button.classList.remove("copied");
+      }, 1500);
+
+      toast.textContent = `✓ Nomor ${label} berhasil disalin`;
+      toast.classList.add("show");
+      if (toastTimer) window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
+    function openMethodModal() {
+      methodModal.classList.add("open");
+    }
+
+    function closeMethodModal() {
+      methodModal.classList.remove("open");
     }
 
     document.addEventListener("click", event => {
       const navigationButton = event.target.closest("[data-view]");
       const copyButton = event.target.closest("[data-copy]");
-      if (navigationButton) render(navigationButton.dataset.view);
-      if (copyButton) copyNumber(copyButton);
+      const selectMethodButton = event.target.closest("[data-select-method]");
+      const openBtn = event.target.closest("#openModalBtn");
+      const closeBtn = event.target.closest("#closeModalBtn");
+
+      if (navigationButton) {
+        render(navigationButton.dataset.view);
+      }
+
+      if (copyButton) {
+        copyNumber(copyButton);
+      }
+
+      if (selectMethodButton) {
+        render(selectMethodButton.dataset.selectMethod);
+        closeMethodModal();
+      }
+
+      if (openBtn) {
+        openMethodModal();
+      }
+
+      if (closeBtn || event.target === methodModal) {
+        closeMethodModal();
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && methodModal.classList.contains("open")) {
+        closeMethodModal();
+      }
     });
 
     const requestedView = window.location.hash.slice(1);
