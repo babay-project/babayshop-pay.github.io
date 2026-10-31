@@ -1,1446 +1,1034 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#111113">
-  <meta name="description" content="Halaman pembayaran resmi BabayShop.id melalui QRIS, e-wallet, dan transfer bank.">
-  <title>BabayShop Payment</title>
-  <link rel="icon" href="https://i.ibb.co.com/0jscDd0j/LOLO-BABAYSHOP-ID.png">
-
-  <style>
-    /* ==================== 1. DESIGN TOKENS ==================== */
-    :root {
-      color-scheme: dark;
-      --bg: #141416;
-      --surface: rgba(28, 28, 31, .92);
-      --surface-strong: #1c1c1f;
-      --surface-soft: #2a2a2e;
-      --line: rgba(255, 255, 255, .11);
-      --line-hover: rgba(255, 255, 255, .28);
-      --text: #fafafa;
-      --muted: #a1a1aa;
-      --accent: #f4f4f5;
-      --accent-dark: #d4d4d8;
-      --success: #22c55e;
-      --radius-xl: 28px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --shadow: 0 24px 80px rgba(0, 0, 0, .5);
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      min-height: 100dvh;
-      overflow-x: hidden;
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 14% 12%, rgba(95, 95, 105, .38) 0, transparent 32rem),
-        radial-gradient(circle at 88% 85%, rgba(65, 65, 75, .35) 0, transparent 34rem),
-        linear-gradient(155deg, #26262a 0%, #17171a 50%, #1f1f23 100%);
-      background-attachment: fixed;
-    }
-
-    body.modal-lock {
-      overflow: hidden;
-      touch-action: none;
-    }
-
-    body::before {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      content: "";
-      pointer-events: none;
-      opacity: .55;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, .06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, .06) 1px, transparent 1px);
-      background-size: 32px 32px;
-    }
-
-    button, a {
-      font: inherit;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    button {
-      color: inherit;
-    }
-
-    img {
-      display: block;
-      max-width: 100%;
-      height: auto;
-    }
-
-    h1, h2, h3, p {
-      margin: 0;
-    }
-
-    /* ==================== 2. LAYOUT & HEADER ==================== */
-    .app-shell {
-      width: min(680px, 100%);
-      min-height: 100dvh;
-      margin: 0 auto;
-      padding: max(18px, env(safe-area-inset-top)) 16px calc(112px + env(safe-area-inset-bottom));
-    }
-
-    .hero {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 18px;
-      padding: 10px 14px;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: rgba(24, 24, 27, .75);
-      backdrop-filter: blur(16px);
-      animation: enter .5s ease both;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      min-width: 0;
-    }
-
-    .brand-logo {
-      width: 44px;
-      height: 44px;
-      flex-shrink: 0;
-      padding: 3px;
-      border: 1px solid var(--line);
-      border-radius: 13px;
-      background: #fff;
-      object-fit: contain;
-    }
-
-    .brand small {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: .02em;
-    }
-
-    .brand strong {
-      display: block;
-      margin-top: 1px;
-      font-size: 15px;
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .method-trigger {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 38px;
-      padding: 0 13px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .06);
-      color: var(--text);
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: background .2s ease, border-color .2s ease, transform .15s ease;
-    }
-
-    .method-trigger:hover {
-      background: rgba(255, 255, 255, .12);
-      border-color: var(--line-hover);
-    }
-
-    .method-trigger:active {
-      transform: scale(.95);
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 10px var(--success);
-    }
-
-    /* ==================== 3. MAIN CARD ==================== */
-    .payment-card {
-      position: relative;
-      overflow: hidden;
-      padding: clamp(22px, 5vw, 38px);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-xl);
-      background: linear-gradient(155deg, rgba(34, 34, 38, .95), rgba(18, 18, 21, .97));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(20px);
-    }
-
-    .payment-card::after {
-      position: absolute;
-      top: -110px;
-      right: -110px;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, .06);
-      filter: blur(12px);
-      content: "";
-      pointer-events: none;
-    }
-
-    .view {
-      position: relative;
-      z-index: 1;
-      animation: enter .35s ease both;
-    }
-
-    .view-header {
-      margin-bottom: 24px;
-      text-align: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 10px;
-      padding: 6px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .05);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .12em;
-    }
-
-    .view-header h1 {
-      font-size: clamp(26px, 6.5vw, 42px);
-      letter-spacing: -.04em;
-      line-height: 1.15;
-    }
-
-    .view-header p {
-      max-width: 440px;
-      margin: 8px auto 0;
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.55;
-    }
-
-    /* ==================== 4. QRIS VIEW ==================== */
-    .qris-layout {
-      display: grid;
-      grid-template-columns: minmax(220px, 280px) 1fr;
-      align-items: center;
-      justify-content: center;
-      gap: clamp(20px, 5vw, 40px);
-    }
-
-    .qris-box {
-      position: relative;
-      margin: 0 auto;
-      padding: 12px;
-      border-radius: 22px;
-      background: #fff;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
-    }
-
-    .qris-box::before {
-      position: absolute;
-      inset: -5px;
-      z-index: -1;
-      border: 1px solid rgba(255, 255, 255, .42);
-      border-radius: 26px;
-      content: "";
-      animation: glow 2.6s ease-in-out infinite;
-    }
-
-    .qris-box img {
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 14px;
-      object-fit: contain;
-    }
-
-    .instruction h2 {
-      margin-bottom: 8px;
-      font-size: 22px;
-      letter-spacing: -.02em;
-    }
-
-    .instruction p {
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.6;
-    }
-
-    .steps-list {
-      display: grid;
-      gap: 8px;
-      margin: 16px 0 0;
-      padding: 0;
-      list-style: none;
-      text-align: left;
-    }
-
-    .steps-list li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border: 1px solid rgba(255, 255, 255, .07);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, .03);
-      font-size: 12.5px;
-      color: #d4d4d8;
-    }
-
-    .step-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 22px;
-      height: 22px;
-      flex-shrink: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, .14);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .owner-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 18px;
-      padding: 13px 15px;
-      border: 1px solid rgba(255, 255, 255, .15);
-      border-radius: 15px;
-      background: rgba(255, 255, 255, .055);
-      text-align: left;
-    }
-
-    .owner-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      flex-shrink: 0;
-      border-radius: 10px;
-      background: rgba(34, 197, 94, .18);
-      color: #4ade80;
-      font-size: 16px;
-      font-weight: 800;
-    }
-
-    .owner-box small {
-      display: block;
-      margin-bottom: 2px;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .09em;
-    }
-
-    .owner-box strong {
-      font-size: 13.5px;
-    }
-
-    /* ==================== 5. PAYMENT ACCOUNTS ==================== */
-    .account-list {
-      display: grid;
-      gap: 11px;
-    }
-
-    .account {
-      display: grid;
-      grid-template-columns: 50px 1fr auto;
-      align-items: center;
-      gap: 13px;
-      padding: 13px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, .035);
-      transition: border-color .2s ease, transform .2s ease, background .2s ease;
-    }
-
-    .account:hover {
-      border-color: var(--line-hover);
-      background: rgba(255, 255, 255, .06);
-    }
-
-    .account-logo {
-      width: 50px;
-      height: 50px;
-      padding: 6px;
-      border-radius: 13px;
-      background: #fff;
-      object-fit: contain;
-    }
-
-    .account-info {
-      min-width: 0;
-    }
-
-    .account-name {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 3px;
-    }
-
-    .account-name strong {
-      font-size: 14px;
-    }
-
-    .bank-code {
-      padding: 2px 7px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, .08);
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 600;
-    }
-
-    .account-number {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      font-variant-numeric: tabular-nums;
-      word-break: break-all;
-    }
-
-    .account-owner {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .copy-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      min-height: 42px;
-      padding: 0 15px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--text);
-      color: #09090b;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
-    }
-
-    .copy-button:hover {
-      background: #fff;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, .4);
-    }
-
-    .copy-button:active {
-      transform: scale(.95);
-    }
-
-    .copy-button.copied {
-      background: var(--success);
-      color: #052e16;
-    }
-
-    /* ==================== 6. ADMIN VIEW ==================== */
-    .admin-panel {
-      max-width: 380px;
-      margin: 24px auto 8px;
-      padding: 26px 20px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: rgba(255, 255, 255, .03);
-      text-align: center;
-    }
-
-    .admin-logo {
-      width: 82px;
-      height: 82px;
-      margin: 0 auto 16px;
-      padding: 6px;
-      border-radius: 24px;
-      background: #fff;
-      object-fit: contain;
-    }
-
-    .admin-panel h2 {
-      font-size: 24px;
-    }
-
-    .admin-phone {
-      display: block;
-      margin: 8px 0;
-      font-size: 18px;
-      letter-spacing: .03em;
-    }
-
-    .admin-panel p {
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.55;
-    }
-
-    .whatsapp-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      max-width: 260px;
-      min-height: 46px;
-      margin-top: 20px;
-      padding: 12px 22px;
-      border-radius: 999px;
-      background: var(--accent);
-      color: #111;
-      font-size: 13px;
-      font-weight: 800;
-      text-decoration: none;
-      transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .whatsapp-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, .35);
-    }
-
-    /* ==================== 7. BOTTOM NAVIGATION ==================== */
-    .bottom-nav {
-      position: fixed;
-      bottom: max(12px, env(safe-area-inset-bottom));
-      left: 50%;
-      z-index: 20;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      width: min(648px, calc(100% - 24px));
-      padding: 7px;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: rgba(16, 16, 19, .9);
-      box-shadow: 0 16px 42px rgba(0, 0, 0, .55);
-      backdrop-filter: blur(22px);
-      transform: translateX(-50%);
-    }
-
-    .nav-button {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      min-height: 52px;
-      padding: 6px 4px;
-      border: 1px solid #3f3f46;
-      border-radius: 14px;
-      background: linear-gradient(180deg, #323236, #222225);
-      color: var(--muted);
-      font-size: 10.5px;
-      font-weight: 800;
-      letter-spacing: .03em;
-      cursor: pointer;
-      box-shadow: inset 0 1px rgba(255, 255, 255, .1), 0 4px 8px rgba(0, 0, 0, .25);
-      transition: color .2s ease, background .2s ease, transform .15s ease, border-color .2s ease;
-    }
-
-    .nav-icon {
-      width: 18px;
-      height: 18px;
-      stroke-width: 2.1;
-    }
-
-    .nav-button:hover {
-      color: var(--text);
-      background: linear-gradient(180deg, #3f3f45, #27272b);
-    }
-
-    .nav-button:active {
-      transform: scale(.95);
-    }
-
-    .nav-button.active {
-      color: #111;
-      border-color: #fff;
-      background: linear-gradient(180deg, #ffffff, #d4d4d8);
-      box-shadow: inset 0 1px #fff, 0 4px 14px rgba(255, 255, 255, .18);
-    }
-
-    /* ==================== 8. POPUP MODAL PILIH METODE (COMPACT CENTERED) ==================== */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      background: rgba(6, 6, 8, .74);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity .28s cubic-bezier(.22, 1, .36, 1), visibility .28s;
-    }
-
-    .modal-backdrop.open {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
-
-    .modal-sheet {
-      position: relative;
-      width: min(336px, calc(100vw - 36px));
-      margin: auto;
-      padding: 13px;
-      border: 1px solid rgba(255, 255, 255, .16);
-      border-radius: 24px;
-      background:
-        radial-gradient(circle at 50% -15%, rgba(255, 255, 255, .13), transparent 60%),
-        linear-gradient(165deg, rgba(38, 38, 44, .98) 0%, rgba(19, 19, 23, .99) 100%);
-      box-shadow:
-        0 24px 70px rgba(0, 0, 0, .75),
-        inset 0 1px 0 rgba(255, 255, 255, .18);
-      transform: scale(.88) translateY(10px);
-      opacity: 0;
-      will-change: transform, opacity;
-      transition:
-        transform .36s cubic-bezier(.22, 1, .36, 1),
-        opacity .24s ease;
-    }
-
-    .modal-sheet.dragging {
-      transition: none !important;
-    }
-
-    .modal-backdrop.open .modal-sheet {
-      transform: scale(1) translateY(0);
-      opacity: 1;
-    }
-
-    .sheet-header {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 24px;
-      margin-bottom: 9px;
-    }
-
-    .sheet-handle {
-      width: 34px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .22);
-    }
-
-    .modal-close {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border: 1px solid rgba(255, 255, 255, .12);
-      border-radius: 50%;
-      background: rgba(255, 255, 255, .07);
-      color: var(--muted);
-      font-size: 12px;
-      cursor: pointer;
-      transition: background .2s ease, color .2s ease, transform .15s ease;
-    }
-
-    .modal-close:hover {
-      background: rgba(255, 255, 255, .16);
-      color: var(--text);
-    }
-
-    .modal-close:active {
-      transform: translateY(-50%) scale(.9);
-    }
-
-    .method-grid {
-      display: grid;
-      gap: 9px;
-    }
-
-    .method-option {
-      position: relative;
-      display: grid;
-      grid-template-columns: 44px 1fr auto;
-      align-items: center;
-      gap: 11px;
-      width: 100%;
-      padding: 11px 12px;
-      border: 1px solid rgba(255, 255, 255, .11);
-      border-radius: 17px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .02));
-      text-align: left;
-      cursor: pointer;
-      opacity: 0;
-      transform: translateY(10px) scale(.97);
-      transition:
-        transform .34s cubic-bezier(.22, 1, .36, 1),
-        opacity .28s ease,
-        border-color .2s ease,
-        background .2s ease,
-        box-shadow .2s ease;
-    }
-
-    .modal-backdrop.open .method-option {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-
-    .modal-backdrop.open .method-option:nth-child(1) {
-      transition-delay: .03s;
-    }
-
-    .modal-backdrop.open .method-option:nth-child(2) {
-      transition-delay: .07s;
-    }
-
-    .modal-backdrop.open .method-option:nth-child(3) {
-      transition-delay: .11s;
-    }
-
-    .method-option:hover {
-      border-color: rgba(255, 255, 255, .32);
-      background: linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04));
-      box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
-    }
-
-    .method-option:active,
-    .method-option.tapped {
-      transform: scale(.96) !important;
-      transition-delay: 0s !important;
-      transition-duration: .1s !important;
-      border-color: rgba(255, 255, 255, .45);
-      background: linear-gradient(145deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .06));
-    }
-
-    .method-option.current {
-      border-color: rgba(255, 255, 255, .35);
-      background: linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04));
-    }
-
-    .method-icon-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      border: 1px solid rgba(255, 255, 255, .15);
-      border-radius: 13px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .04));
-      color: #fff;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15);
-    }
-
-    .method-option[data-select-method="qris"] .method-icon-box {
-      background: linear-gradient(145deg, rgba(34, 197, 94, .22), rgba(34, 197, 94, .06));
-      border-color: rgba(34, 197, 94, .35);
-      color: #86efac;
-    }
-
-    .method-option[data-select-method="ewallet"] .method-icon-box {
-      background: linear-gradient(145deg, rgba(56, 189, 248, .22), rgba(56, 189, 248, .06));
-      border-color: rgba(56, 189, 248, .35);
-      color: #7dd3fc;
-    }
-
-    .method-option[data-select-method="bank"] .method-icon-box {
-      background: linear-gradient(145deg, rgba(251, 191, 36, .22), rgba(251, 191, 36, .06));
-      border-color: rgba(251, 191, 36, .35);
-      color: #fde68a;
-    }
-
-    .method-icon-box svg {
-      width: 21px;
-      height: 21px;
-    }
-
-    .method-meta {
-      min-width: 0;
-    }
-
-    .method-title-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 2px;
-    }
-
-    .method-title-row strong {
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: -.01em;
-    }
-
-    .method-pill {
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .12);
-      color: #e4e4e7;
-      font-size: 8.5px;
-      font-weight: 800;
-      letter-spacing: .04em;
-    }
-
-    .method-pill.recommended {
-      background: rgba(34, 197, 94, .2);
-      color: #86efac;
-      border: 1px solid rgba(34, 197, 94, .32);
-    }
-
-    .method-meta span {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.3;
-    }
-
-    .method-arrow {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, .08);
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 800;
-      transition: transform .2s ease, background .2s ease, color .2s ease;
-    }
-
-    .method-option:hover .method-arrow,
-    .method-option:active .method-arrow {
-      transform: translateX(2px);
-      background: var(--text);
-      color: #111;
-    }
-
-    /* ==================== 9. TOAST NOTIFICATION ==================== */
-    .toast {
-      position: fixed;
-      bottom: calc(88px + env(safe-area-inset-bottom));
-      left: 50%;
-      z-index: 60;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 18px;
-      border-radius: 999px;
-      background: var(--text);
-      color: #111;
-      box-shadow: 0 14px 36px rgba(0, 0, 0, .45);
-      font-size: 12.5px;
-      font-weight: 800;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transform: translate(-50%, 14px);
-      transition: opacity .22s ease, transform .22s ease;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-
-    @keyframes enter {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0667c9">
+    <meta name="description" content="Pesan jasa cek nomor via Getcontact di BabayShop.id. Maksimal 3 nomor sekali pesan, fee seikhlasnya, lanjut melalui WhatsApp.">
+    <title>
+      Cek Nomor Getcontact — BabayShop.id
+    </title>
+    <style>
+      :root{
+        color-scheme:light;
+        --bg:#f5f9ff;
+        --panel:#ffffff;
+        --line:#d6e5f5;
+        --text:#102d4d;
+        --muted:#526b86;
+        --accent:#0667c9;
+        --mint:#0667c9;
+        --font:Inter,"Segoe UI",Arial,sans-serif
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+      *{
+        box-sizing:border-box
       }
-    }
-
-    @keyframes glow {
-      0%, 100% {
-        opacity: .35;
-        transform: scale(.99);
+      body{
+        margin:0;
+        background:var(--bg);
+        color:var(--text);
+        font-family:var(--font);
+        line-height:1.6
       }
-      50% {
-        opacity: .95;
-        transform: scale(1.015);
+      button,input,a,textarea{
+        -webkit-tap-highlight-color:transparent
       }
-    }
-
-    /* ==================== 10. MOBILE RESPONSIVE ==================== */
-    @media (max-width: 620px) {
-      .app-shell {
-        padding: max(12px, env(safe-area-inset-top)) 12px calc(104px + env(safe-area-inset-bottom));
+      button,input,textarea{
+        font:inherit
       }
-
-      .hero {
-        margin-bottom: 14px;
-        padding: 9px 12px;
+      button,a{
+        touch-action:manipulation
       }
-
-      .payment-card {
-        padding: 22px 16px;
-        border-radius: 24px;
+      button,a,input,textarea,summary{
+        outline-offset:5px
       }
-
-      .view-header {
-        margin-bottom: 20px;
+      button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{
+        outline:2px solid var(--accent)
       }
-
-      .qris-layout {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+      button{
+        cursor:pointer
       }
-
-      .qris-box {
-        width: min(265px, 84%);
+      button:disabled{
+        cursor:default;
+        opacity:.45
       }
-
-      .instruction {
-        width: 100%;
-        text-align: center;
+      a{
+        color:inherit;
+        text-decoration:none
       }
-
-      .account {
-        grid-template-columns: 46px 1fr auto;
-        gap: 11px;
-        padding: 12px;
+      button{
+        color:inherit
       }
-
-      .account-logo {
-        width: 46px;
-        height: 46px;
+      h1,h2,h3,p{
+        margin:0
       }
-
-      .account-number {
-        font-size: 14px;
+      button svg,a svg{
+        width:19px;
+        height:19px;
+        flex-shrink:0
       }
-
-      .copy-button {
-        min-height: 40px;
-        padding: 0 13px;
+      svg{
+        fill:none;
+        stroke:currentColor;
+        stroke-width:1.7;
+        stroke-linecap:round;
+        stroke-linejoin:round
       }
-
-      /* Compact Centered Popup on Mobile */
-      .modal-backdrop {
-        align-items: center;
-        justify-content: center;
-        padding: 16px;
+      [hidden]{
+        display:none!important
       }
-
-      .modal-sheet {
-        width: min(320px, calc(100vw - 32px));
-        padding: 12px;
-        border-radius: 22px;
+      .wrap{
+        width:min(1080px,calc(100% - 48px));
+        margin:auto
       }
-    }
-
-    @media (max-width: 370px) {
-      .method-trigger span:not(.status-dot) {
-        font-size: 11px;
+      .nav{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:25px 0;
+        border-bottom:1px solid var(--line);
+        gap:20px
       }
-
-      .account {
-        grid-template-columns: 42px 1fr;
+      .brand{
+        font-size:21px;
+        font-weight:800;
+        letter-spacing:-.8px;
+        display:flex;
+        align-items:center;
+        gap:10px
       }
-
-      .account-logo {
-        width: 42px;
-        height: 42px;
+      .brand small{
+        color:var(--accent);
+        font-size:inherit
       }
-
-      .copy-button {
-        grid-column: 1 / -1;
-        width: 100%;
+      .mark{
+        display:grid;
+        place-items:center;
+        width:34px;
+        height:34px;
+        background:var(--accent);
+        color:#ffffff;
+        border-radius:10px;
+        font-size:24px
       }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        animation: none !important;
-        transition: none !important;
+      .nav-link{
+        color:var(--muted);
+        font-size:13px;
+        display:flex;
+        gap:8px;
+        align-items:center
       }
-    }
-  </style>
-</head>
-
-<body>
-  <main class="app-shell">
-    <header class="hero">
-      <div class="brand">
-        <img class="brand-logo" src="https://i.ibb.co.com/0jscDd0j/LOLO-BABAYSHOP-ID.png" alt="Logo BabayShop">
-        <div>
-          <small>Official Payment Center</small>
-          <strong>BabayShop.id</strong>
+      .hero{
+        display:grid;
+        grid-template-columns:1.15fr 1fr;
+        gap:80px;
+        align-items:center;
+        padding:92px 0 76px
+      }
+      .eyebrow{
+        font-size:11px;
+        letter-spacing:2px;
+        font-weight:700;
+        text-transform:uppercase;
+        color:var(--accent);
+        display:flex;
+        align-items:center;
+        gap:9px
+      }
+      .dot{
+        width:6px;
+        height:6px;
+        background:var(--accent);
+        border-radius:50%
+      }
+      h1{
+        font-size:clamp(40px,5.5vw,65px);
+        line-height:1.06;
+        letter-spacing:-3px;
+        margin:22px 0
+      }
+      h1 span{
+        color:var(--accent)
+      }
+      .lead{
+        color:var(--muted);
+        max-width:440px;
+        font-size:16px
+      }
+      .button{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        padding:15px 21px;
+        border:1px solid transparent;
+        border-radius:12px;
+        background:var(--accent);
+        color:#ffffff;
+        font-weight:750;
+        line-height:1.4;
+        transition:background .15s,transform .15s
+      }
+      .button:hover{
+        background:#0056ad
+      }
+      .button:active{
+        transform:translateY(1px)
+      }
+      .button.wa{
+        background:var(--mint);
+        color:#ffffff
+      }
+      .button.wa:hover{
+        background:#0056ad
+      }
+      .hero .button{
+        margin-top:30px
+      }
+      .micro{
+        font-size:12px;
+        color:var(--muted);
+        margin-top:13px
+      }
+      .mock{
+        border:1px solid #c5dff9;
+        border-radius:24px;
+        background:#ffffff;
+        position:relative;
+        overflow:hidden;
+        transform:rotate(2deg)
+      }
+      .mock-head{
+        display:flex;
+        align-items:center;
+        gap:9px;
+        padding:18px 24px;
+        background:#e9f3ff;
+        font-size:12px;
+        color:#285b90
+      }
+      .mock-head span:last-child{
+        margin-left:auto;
+        color:var(--muted);
+        font-size:10px;
+        text-transform:uppercase;
+        letter-spacing:1px
+      }
+      .mock-main{
+        padding:32px
+      }
+      .phone-icon{
+        background:#e5f1ff;
+        width:57px;
+        height:57px;
+        display:grid;
+        place-items:center;
+        border-radius:18px;
+        color:var(--accent);
+        margin-bottom:22px
+      }
+      .phone-icon svg{
+        width:27px;
+        height:27px
+      }
+      .mock-number{
+        font-size:25px;
+        font-weight:650;
+        letter-spacing:1px
+      }
+      .mock-caption{
+        font-size:12px;
+        color:var(--muted);
+        margin:5px 0 24px
+      }
+      .tag{
+        padding:10px 13px;
+        border:1px solid #d6e5f5;
+        border-radius:10px;
+        margin-top:9px;
+        font-size:13px;
+        display:flex;
+        align-items:center;
+        gap:9px
+      }
+      .tag span{
+        color:var(--accent)
+      }
+      .mock-foot{
+        border-top:1px solid #d6e5f5;
+        margin-top:22px;
+        padding-top:18px;
+        color:var(--muted);
+        font-size:11px
+      }
+      .info-strip{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        border:1px solid var(--line);
+        border-radius:16px;
+        margin-bottom:70px
+      }
+      .info-strip div{
+        padding:23px 28px
+      }
+      .info-strip div+div{
+        border-left:1px solid var(--line)
+      }
+      .info-strip strong{
+        display:block;
+        font-size:16px
+      }
+      .info-strip span{
+        font-size:12px;
+        color:var(--muted)
+      }
+      .section-head{
+        display:flex;
+        justify-content:space-between;
+        gap:20px;
+        align-items:end;
+        margin-bottom:30px
+      }
+      .section-head h2{
+        font-size:28px;
+        letter-spacing:-1px
+      }
+      .section-head span{
+        font-size:12px;
+        color:var(--muted)
+      }
+      .steps{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:30px;
+        margin-bottom:70px
+      }
+      .step .num{
+        color:var(--accent);
+        font-size:12px;
+        font-family:monospace;
+        border-bottom:1px solid var(--line);
+        padding-bottom:15px;
+        margin-bottom:18px
+      }
+      .step h3{
+        font-size:16px;
+        margin-bottom:8px
+      }
+      .step p{
+        font-size:13px;
+        color:var(--muted)
+      }
+      .faq{
+        max-width:740px;
+        padding-bottom:55px
+      }
+      .faq h2{
+        font-size:24px;
+        margin-bottom:20px
+      }
+      details{
+        border-bottom:1px solid var(--line);
+        padding:17px 0
+      }
+      summary{
+        font-size:14px;
+        font-weight:600;
+        cursor:pointer
+      }
+      details p{
+        font-size:13px;
+        color:var(--muted);
+        margin:12px 0 0
+      }
+      .footer{
+        border-top:1px solid var(--line);
+        padding:22px 0 30px;
+        display:flex;
+        justify-content:space-between;
+        gap:15px;
+        font-size:11px;
+        color:var(--muted)
+      }
+      .footer time{
+        font-variant-numeric:tabular-nums;
+        white-space:nowrap
+      }
+      dialog{
+        padding:0;
+        border:1px solid #c9def5;
+        border-radius:22px;
+        background:#ffffff;
+        color:var(--text);
+        width:min(510px,calc(100% - 28px));
+        max-height:calc(100dvh - 28px);
+        overflow:auto;
+        box-shadow:0 35px 100px #092e5433
+      }
+      dialog::backdrop{
+        background:#08244399;
+        backdrop-filter:blur(8px)
+      }
+      body.modal-open{
+        overflow:hidden
+      }
+      .dialog-inner{
+        padding:30px
+      }
+      .dialog-top{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-bottom:30px
+      }
+      .dialog-brand{
+        font-size:15px;
+        font-weight:750;
+        letter-spacing:-.3px
+      }
+      .dialog-brand span{
+        color:var(--accent)
+      }
+      .close{
+        width:34px;
+        height:34px;
+        border-radius:50%;
+        background:#edf5ff;
+        color:#285b90;
+        border:1px solid #cbdff5;
+        display:grid;
+        place-items:center;
+        font-size:23px;
+        line-height:1
+      }
+      .progress{
+        display:flex;
+        gap:6px;
+        margin-bottom:27px
+      }
+      .progress i{
+        height:3px;
+        background:#dce9f8;
+        flex:1;
+        border-radius:3px
+      }
+      .progress i.on{
+        background:var(--accent)
+      }
+      .step-label{
+        font-size:10px;
+        letter-spacing:1.5px;
+        color:var(--accent);
+        text-transform:uppercase;
+        font-weight:700;
+        margin-bottom:8px
+      }
+      .dialog-title{
+        font-size:29px;
+        letter-spacing:-1.1px;
+        line-height:1.2
+      }
+      .intro{
+        color:var(--muted);
+        font-size:13px;
+        margin-top:10px;
+        margin-bottom:25px
+      }
+      .phone-row{
+        margin-bottom:15px
+      }
+      .phone-row label{
+        display:block;
+        font-size:12px;
+        font-weight:600;
+        margin-bottom:7px
+      }
+      .field-wrap{
+        display:flex;
+        gap:8px
+      }
+      .phone-row input{
+        width:100%;
+        min-width:0;
+        background:#f5f9ff;
+        border:1px solid #c4d9ef;
+        border-radius:11px;
+        color:var(--text);
+        padding:14px;
+        font-size:16px;
+        letter-spacing:.4px
+      }
+      .phone-row input::placeholder{
+        color:#637c97
+      }
+      .phone-row input[aria-invalid=true]{
+        border-color:#c52c3c
+      }
+      .remove{
+        background:transparent;
+        border:1px solid #c4d9ef;
+        border-radius:11px;
+        width:45px;
+        flex-shrink:0;
+        font-size:21px
+      }
+      .error{
+        display:block;
+        color:#b42335;
+        font-size:12px;
+        margin-top:5px;
+        min-height:0
+      }
+      .add-row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        margin:5px 0 20px
+      }
+      .add{
+        background:transparent;
+        color:var(--accent);
+        border:0;
+        padding:6px 0;
+        font-size:12px;
+        font-weight:650
+      }
+      .counter{
+        font-size:11px;
+        color:var(--muted)
+      }
+      .hint{
+        color:var(--muted);
+        font-size:11px;
+        line-height:1.6;
+        margin-bottom:22px
+      }
+      .full{
+        width:100%
+      }
+      .bottom-note{
+        font-size:10px;
+        color:var(--muted);
+        text-align:center;
+        margin-top:14px
+      }
+      .review-head{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        margin-bottom:10px;
+        gap:15px;
+        font-size:12px;
+        font-weight:600
+      }
+      .text-button{
+        padding:4px 0;
+        background:transparent;
+        border:0;
+        font-size:12px;
+        color:var(--accent)
+      }
+      textarea{
+        resize:vertical;
+        background:#f5f9ff;
+        color:#274562;
+        border:1px solid var(--line);
+        border-radius:12px;
+        width:100%;
+        padding:14px;
+        font-size:12px;
+        line-height:1.7;
+        min-height:156px;
+        display:block
+      }
+      .payment{
+        border:1px solid #c4dffb;
+        background:#edf6ff;
+        border-radius:14px;
+        padding:21px;
+        margin:22px 0
+      }
+      .pay-head{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px
+      }
+      .pay-head strong{
+        font-size:14px
+      }
+      .pay-desc{
+        font-size:12px;
+        color:var(--muted);
+        margin-top:7px
+      }
+      .qr-card{
+        background:white;
+        border-radius:12px;
+        padding:12px;
+        width:156px;
+        max-width:100%;
+        margin:16px auto 11px;
+        color:#171923;
+        text-align:center
+      }
+      .qr-card img{
+        display:block;
+        width:100%;
+        height:auto;
+        aspect-ratio:1;
+        image-rendering:pixelated
+      }
+      .qr-card b{
+        display:block;
+        font-size:12px;
+        margin-bottom:10px
+      }
+      .qr-card small{
+        display:block;
+        font-size:9px;
+        margin-top:9px;
+        color:#51525a;
+        letter-spacing:.6px
+      }
+      .qr-action{
+        display:flex;
+        justify-content:center;
+        gap:18px;
+        font-size:11px;
+        color:var(--accent)
+      }
+      .back-row{
+        display:flex;
+        justify-content:center;
+        margin-top:12px
+      }
+      .toast{
+        position:fixed;
+        bottom:24px;
+        left:50%;
+        transform:translateX(-50%);
+        z-index:20;
+        padding:12px 20px;
+        border:1px solid #bad6f4;
+        border-radius:12px;
+        background:#e6f2ff;
+        box-shadow:0 5px 20px #08244322;
+        font-size:12px;
+        max-width:90%;
+        text-align:center
+      }
+      .qr-dialog{
+        width:min(480px,calc(100% - 28px))
+      }
+      .qr-dialog .qr-card{
+        width:100%;
+        padding:18px
+      }
+      .order-actions{
+        display:grid;
+        gap:10px;
+        margin-top:16px
+      }
+      .qr-thumbnail{
+        border:0;
+        background:none;
+        padding:0;
+        display:block;
+        width:100%;
+        cursor:zoom-in
+      }
+      .qr-card b{
+        font-size:10px
+      }
+      .qr-card small{
+        font-size:8px
+      }
+      .qr-dialog .dialog-top{
+        margin-bottom:10px
+      }
+      .noscript{
+        padding:20px;
+        background:#075da8;
+        color:white;
+        text-align:center
+      }
+      @media(max-width:760px){
+        .wrap{
+          width:calc(100% - 36px)
+        }
+        .nav{
+          padding:20px 0
+        }
+        .brand{
+          font-size:19px
+        }
+        .nav-link{
+          font-size:11px
+        }
+        .hero{
+          grid-template-columns:1fr;
+          gap:38px;
+          padding:48px 0 36px
+        }
+        h1{
+          font-size:48px;
+          letter-spacing:-2.5px
+        }
+        .lead{
+          font-size:15px
+        }
+        .mock{
+          transform:none;
+          max-width:420px;
+          width:100%;
+          justify-self:center
+        }
+        .mock-main{
+          padding:25px
+        }
+        .info-strip{
+          margin-bottom:45px
+        }
+        .info-strip div{
+          padding:17px 12px
+        }
+        .info-strip strong{
+          font-size:13px
+        }
+        .info-strip span{
+          font-size:10px;
+          display:block;
+          margin-top:4px
+        }
+        .section-head{
+          display:block
+        }
+        .section-head span{
+          display:block;
+          margin-top:8px
+        }
+        .steps{
+          grid-template-columns:1fr;
+          gap:25px;
+          margin-bottom:44px
+        }
+        .step .num{
+          margin-bottom:10px;
+          padding-bottom:8px
+        }
+        .footer{
+          flex-wrap:wrap
+        }
+        .dialog-inner{
+          padding:24px
+        }
+        .dialog-title{
+          font-size:27px
+        }
+        .dialog-top{
+          margin-bottom:24px
+        }
+        .payment{
+          padding:17px
+        }
+        .qr-card{
+          width:156px
+        }
+      }
+      @media(prefers-reduced-motion:reduce){
+        *{
+          scroll-behavior:auto!important;
+          transition:none!important
+        }
+      }
+      .info-strip{
+        background:#ffffff
+      }
+      .button{
+        box-shadow:0 4px 12px #0667c918
+      }
+      .mock{
+        box-shadow:0 18px 60px #0667c90d
+      }
+      .qr-dialog .button{
+        box-shadow:none
+      }
+    </style>
+  </head>
+  <body>
+    <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs><symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol><symbol id="phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4M10 5h4"/></symbol><symbol id="chat" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 11h8m-8 4h5"/></symbol></defs></svg>
+    <noscript>
+      <div class="noscript">
+        Aktifkan JavaScript untuk mengisi nomor, atau
+        <a href="https://wa.me/6281523984574">hubungi admin melalui WhatsApp</a>
+        .
+      </div>
+    </noscript>
+    <div class="wrap">
+      <header class="nav">
+        <a href="#" class="brand" aria-label="BabayShop.id beranda"><span class="mark">✦</span><span>babay<small>shop.id</small></span></a>
+        <a class="nav-link" href="https://wa.me/6281523984574" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true"><use href="#chat"/></svg>Chat admin ↗</a>
+      </header>
+      <main>
+        <section class="hero">
+          <div>
+            <p class="eyebrow"><span class="dot"></span>Jasa cek nomor · Getcontact</p>
+            <h1>Nomor siapa?<br><span>Yuk, cek dulu.</span></h1>
+            <p class="lead">Bantu temukan tag yang tersedia untuk nomor HP lewat Getcontact. Kirim nomornya, biar admin yang bantu cek.</p>
+            <button class="button" id="open-order">Cek nomor sekarang <svg aria-hidden="true"><use href="#arrow"/></svg></button>
+            <p class="micro">1–3 nomor sekali pesan · Fee seikhlasnya</p>
+          </div>
+          <div class="mock" aria-label="Ilustrasi tampilan tag, bukan hasil pemeriksaan">
+            <div class="mock-head">
+              <span class="dot"></span>
+              Kenali lewat tag
+              <span>Ilustrasi</span>
+            </div>
+            <div class="mock-main">
+              <div class="phone-icon">
+                <svg aria-hidden="true"><use href="#phone"/></svg>
+              </div>
+              <div class="mock-number">
+                +62 8•• •••• ••••
+              </div>
+              <div class="mock-caption">
+                Tag yang mungkin muncul di Getcontact
+              </div>
+              <div class="tag">
+                <span>#</span>
+                Nama kontak
+              </div>
+              <div class="tag">
+                <span>#</span>
+                Nama usaha
+              </div>
+              <div class="tag">
+                <span>#</span>
+                Sebutan lainnya
+              </div>
+              <div class="mock-foot">
+                Hasil mengikuti tag yang tersedia. Tidak semua nomor memiliki tag.
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="info-strip" aria-label="Informasi layanan">
+          <div>
+            <strong>Maksimal 3 nomor</strong>
+            <span>Dalam satu kali pesan</span>
+          </div>
+          <div>
+            <strong>Fee seikhlasnya</strong>
+            <span>Untuk support jasa ini</span>
+          </div>
+          <div>
+            <strong>Lewat WhatsApp</strong>
+            <span>Admin bantu proses cek</span>
+          </div>
+        </section>
+        <section id="cara-pesan">
+          <div class="section-head">
+            <h2>Singkat saja caranya.</h2>
+            <span>Dari nomor HP, langsung ke chat admin.</span>
+          </div>
+          <div class="steps">
+            <article class="step">
+              <div class="num">
+                01 / ISI NOMOR
+              </div>
+              <h3>Mau cek nomor yang mana?</h3>
+              <p>Isi satu nomor, atau tambah kolom kalau mau cek lebih dari satu. Maksimal tiga nomor.</p>
+            </article>
+            <article class="step">
+              <div class="num">
+                02 / KIRIM KE WHATSAPP
+              </div>
+              <h3>Pesannya sudah disiapkan.</h3>
+              <p>Klik Langsung Cek Nomor untuk membuka WhatsApp admin dengan pesan yang otomatis terisi. Pesannya juga bisa kamu salin.</p>
+            </article>
+            <article class="step">
+              <div class="num">
+                03 / SUPPORT ADMIN
+              </div>
+              <h3>Nominalnya kamu tentukan.</h3>
+              <p>Kalau berkenan, scan QRIS untuk support seikhlasnya. QRIS bisa diperbesar atau disimpan. Kirim bukti transfer lewat chat admin.</p>
+            </article>
+          </div>
+        </section>
+        <section class="faq">
+          <h2>Sebelum cek nomor</h2>
+          <details>
+            <summary>Apa yang akan saya terima?</summary>
+            <p>Admin membantu mengecek tag yang tersedia di Getcontact dan mengirim hasilnya melalui WhatsApp. Tag adalah sebutan kontak dari pengguna lain, bukan identitas yang terverifikasi.</p>
+          </details>
+          <details>
+            <summary>Apakah hasilnya langsung muncul di website?</summary>
+            <p>Tidak. Website ini menyiapkan permintaanmu ke WhatsApp. Pengecekan dan pengiriman hasil dilakukan oleh admin setelah pesan diterima.</p>
+          </details>
+          <details>
+            <summary>Harus bayar berapa?</summary>
+            <p>Fee seikhlasnya untuk membantu support jasa ini, tanpa nominal minimum yang ditentukan. Pembayaran dicek manual oleh admin melalui bukti transfer.</p>
+          </details>
+          <details>
+            <summary>Kalau nomornya tidak punya tag?</summary>
+            <p>Admin akan memberi tahu jika tidak ada tag yang tersedia. Banyaknya informasi mengikuti hasil yang bisa dilihat di Getcontact.</p>
+          </details>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>© <span id="year">2026</span> BabayShop.id · Jasa independen, bukan layanan resmi Getcontact.</span>
+        <time id="clock" aria-label="Waktu Indonesia Barat"></time>
+      </footer>
+    </div>
+    <dialog id="order-dialog" aria-labelledby="order-title">
+      <div class="dialog-inner">
+        <div class="dialog-top">
+          <div class="dialog-brand">
+            babay
+            <span>shop.id</span>
+          </div>
+          <button class="close" id="close-order" aria-label="Tutup popup">×</button>
+        </div>
+        <div class="progress" aria-hidden="true">
+          <i class="on"></i>
+          <i id="progress-two"></i>
+        </div>
+        <section id="entry-step">
+          <div class="step-label">
+            Langkah 01 / 02
+          </div>
+          <h2 class="dialog-title" id="order-title">Mau cek nomor siapa?</h2>
+          <p class="intro">Masukkan nomor HP yang ingin dicek via Getcontact. Bisa sampai 3 nomor dalam sekali pesan.</p>
+          <form id="number-form" novalidate>
+            <div id="phone-fields">
+            </div>
+            <div class="add-row">
+              <button class="add" id="add-phone" type="button">＋ Tambah nomor</button>
+              <span class="counter" id="phone-counter" aria-live="polite">1 dari 3 nomor</span>
+            </div>
+            <p class="hint">Bisa pakai format 08…, 628…, atau +628… untuk nomor Indonesia. Nomor negara lain diawali kode negara (+).</p>
+            <button class="button full" type="submit">Lanjut <svg aria-hidden="true"><use href="#arrow"/></svg></button>
+            <p class="bottom-note">Nomor baru diteruskan saat kamu mengirim pesan di WhatsApp.</p>
+          </form>
+        </section>
+        <section id="review-step" hidden>
+          <div class="step-label">
+            Langkah 02 / 02
+          </div>
+          <h2 class="dialog-title" id="review-title" tabindex="-1">Tinggal kirim ke admin.</h2>
+          <p class="intro">Pesanmu sudah siap. Klik Langsung Cek Nomor untuk membuka WhatsApp admin dengan pesan yang sudah terisi.</p>
+          <div class="payment">
+            <div class="pay-head">
+              <strong>Support Admin</strong>
+            </div>
+            <p class="pay-desc">Kalau berkenan, bantu support admin dengan nominal seikhlasnya. Terima kasih!</p>
+            <div class="qr-card">
+              <b>QRIS · BabayShop.id</b>
+              <button type="button" class="qr-thumbnail" id="qr-thumbnail" aria-label="Perbesar QRIS BabayShop"><img class="qris-image" alt="Kode QRIS support admin BabayShop" width="500" height="500"></button>
+              <small>SCAN DENGAN BANK / E-WALLET</small>
+            </div>
+            <div class="qr-action">
+              <button class="text-button" id="enlarge-qr">Perbesar QRIS</button>
+            </div>
+          </div>
+          <div class="review-head">
+            <label for="message">Pesan untuk admin</label>
+            <button class="text-button" id="copy-message">Salin pesan</button>
+          </div>
+          <textarea id="message" rows="9" readonly aria-label="Pratinjau pesan WhatsApp"></textarea>
+          <div class="order-actions">
+            <a class="button wa full" id="send-wa" href="https://wa.me/6281523984574" target="_blank" rel="noopener noreferrer">Langsung Cek Nomor <svg aria-hidden="true"><use href="#arrow"/></svg></a>
+          </div>
+          <p class="bottom-note">Pesan terisi otomatis. Tinggal tekan Kirim di WhatsApp.<br>Admin · 0815-2398-4574</p>
+          <div class="back-row">
+            <button class="text-button" id="back-entry">← Ubah nomor</button>
+          </div>
+        </section>
+        <div class="toast" id="toast" role="status" hidden>
         </div>
       </div>
-
-      <button class="method-trigger" id="openModalBtn" type="button" aria-label="Pilih metode pembayaran">
-        <span class="status-dot"></span>
-        <span>Pilih Metode</span>
-      </button>
-    </header>
-
-    <section class="payment-card" aria-live="polite">
-      <div id="content"></div>
-    </section>
-  </main>
-
-  <!-- Navigasi Bawah -->
-  <nav class="bottom-nav" aria-label="Metode pembayaran">
-    <button class="nav-button active" type="button" data-view="qris">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-        <path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 19h2M19 14v2"></path>
-      </svg>
-      <span>QRIS</span>
-    </button>
-
-    <button class="nav-button" type="button" data-view="ewallet">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"></path>
-        <rect x="15" y="9" width="6" height="6" rx="1.5"></rect>
-      </svg>
-      <span>E-WALLET</span>
-    </button>
-
-    <button class="nav-button" type="button" data-view="bank">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"></path>
-      </svg>
-      <span>BANK</span>
-    </button>
-
-    <button class="nav-button" type="button" data-view="admin">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-      <span>ADMIN</span>
-    </button>
-  </nav>
-
-  <!-- Pop-up Modal Pilih Metode Pembayaran -->
-  <div class="modal-backdrop" id="methodModal" role="dialog" aria-modal="true" aria-label="Pilih metode pembayaran">
-    <div class="modal-sheet" id="modalSheet">
-      <div class="sheet-header" id="sheetDragArea">
-        <div class="sheet-handle" aria-hidden="true"></div>
-        <button class="modal-close" id="closeModalBtn" type="button" aria-label="Tutup pop up">✕</button>
+    </dialog>
+    <dialog id="qr-dialog" class="qr-dialog" aria-labelledby="qr-title">
+      <div class="dialog-inner">
+        <div class="dialog-top">
+          <h2 id="qr-title" style="font-size:17px">QRIS BabayShop.id</h2>
+          <button class="close" id="close-qr" aria-label="Tutup QRIS">×</button>
+        </div>
+        <div class="qr-card">
+          <img class="qris-image" alt="QRIS BabayShop ukuran besar" width="500" height="500">
+        </div>
+        <a class="button full" id="save-qr" download="QRIS-BabayShop.png" style="margin-bottom:16px">Simpan QRIS ↓</a>
+        <p class="hint" style="margin-bottom:0;text-align:center">Scan dari aplikasi bank atau e-wallet.<br>Nominal seikhlasnya untuk support jasa ini.</p>
       </div>
-
-      <div class="method-grid">
-        <button class="method-option" type="button" data-select-method="qris">
-          <div class="method-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-              <path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 19h2M19 14v2"></path>
-            </svg>
-          </div>
-          <div class="method-meta">
-            <div class="method-title-row">
-              <strong>QRIS</strong>
-              <span class="method-pill recommended">INSTANT</span>
-            </div>
-            <span>Scan semua M-Banking & E-Wallet</span>
-          </div>
-          <span class="method-arrow">→</span>
-        </button>
-
-        <button class="method-option" type="button" data-select-method="ewallet">
-          <div class="method-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"></path>
-              <rect x="15" y="9" width="6" height="6" rx="1.5"></rect>
-            </svg>
-          </div>
-          <div class="method-meta">
-            <div class="method-title-row">
-              <strong>E-WALLET</strong>
-              <span class="method-pill">4 PILIHAN</span>
-            </div>
-            <span>GoPay, DANA, ShopeePay, LinkAja</span>
-          </div>
-          <span class="method-arrow">→</span>
-        </button>
-
-        <button class="method-option" type="button" data-select-method="bank">
-          <div class="method-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"></path>
-            </svg>
-          </div>
-          <div class="method-meta">
-            <div class="method-title-row">
-              <strong>TRANSFER BANK</strong>
-              <span class="method-pill">2 REKENING</span>
-            </div>
-            <span>Bank Jago & SeaBank</span>
-          </div>
-          <span class="method-arrow">→</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notifikasi Salin -->
-  <div class="toast" id="toast" role="status">✓ Nomor berhasil disalin</div>
-
-  <script>
-    /* ==================== DATA YANG MUDAH DIEDIT ==================== */
-    const OWNER_NAME = "Bayu Rizky Sampurna";
-    const QRIS_IMAGE = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyn_POU24OHFf6f_ThdafRVVCDrG-GWihtCGBynkBUqn5AiKFRGvh_UVCT8cx9pOxbkH3w5NczLeo-MAH_1MVc8Qe-eAtEeAAW4-102vgrZVt_EJS980wpV_FTJ4MTdPg5jYEQOcCBTU374Kl5meMugCsI9rjWChWY6s_h7DjLQ3WiOxBAjbN6VL071gc/s1600/QRIS-BABAYSHOP-WEBSITE.png";
-    const SHOP_LOGO = "https://i.ibb.co.com/0jscDd0j/LOLO-BABAYSHOP-ID.png";
-    const ADMIN_PHONE_DISPLAY = "0815 2398 4574";
-    const ADMIN_PHONE_WHATSAPP = "6281523984574";
-
-    const ewalletAccounts = [
-      {
-        name: "GoPay",
-        number: "0882 1599 3544",
-        copy: "088215993544",
-        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEgq3HaU8T7ZEEmljJuxypoDObOdQYkxB38dVJa1y89eUqFwHXe7kYE_y9xz5gv85e44cuMs0hLmUBXPRdf0VvYHlqZjgtYjCHmNFQjKc_5dZ3k67UOH2CmQAvtVOhDjgze941ZTwyehsrRDleoxR0Q-5fh-NtPMN0rVF77ObjtItBkc2rbEXboOgqD2nBcH"
-      },
-      {
-        name: "DANA",
-        number: "0882 1599 3544",
-        copy: "088215993544",
-        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEjXur82-Ithr--hcBvVeoVrnkXOOlMCyFMKGbK7vgciysVhk1v01In0Ss0l6u3B5mfSbcHi0kj8LyGqJKRwE_BgfPQFPq9xg_vIe9wUVsWSeIQZi6xaseE0GAnwl2n3nmJmbAcq2Ovr92JzZ663bH4ugSiF7FZ8BpKh09yRC-SJVAedJSSTmTB-EMZLMeWs"
-      },
-      {
-        name: "ShopeePay",
-        number: "0882 1599 3544",
-        copy: "088215993544",
-        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEgW7BuN7el3v1EBYrI4hZ6NOiMZ-PA4quG8Yf6Hg3fde69_r-XWtiikm-596QLg58iu0YnNcCWFzj4N0FF2lTd_G2ptYP9gHYrrZHndbmuKFctv54LQc-OaXlNP-by8vndGL-Vy9RZE2Yodw33u9lCdYzmMlDHvwRx4NltZBxasQT_yC5K9FbTkg5HwnJbi"
-      },
-      {
-        name: "LinkAja",
-        number: "0882 1599 3544",
-        copy: "088215993544",
-        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEi6_Dj1-t2itD5VXaskuXhDquciUjmUlBS_gO67JMRen5mZaT9YSiF7MKzB1LdfMlEDP1M50YcDpTPCuDMx64woMcTeG7PFw6czwoN4OPIB9do06uf0LkRDlVWPLa03shIrTWwZ-xG735lDTvu9pb6aGOX3jSdb_XNrNVMceTZafxwLTFCiNn8IJefrDI0L"
+    </dialog>
+    <script>
+      'use strict';
+      // Konfigurasi toko. QRIS-GTC.png dari tautan pengguna disematkan tanpa mengubah gambar.
+      const ADMIN_WHATSAPP = '6281523984574';
+      const QRIS_IMAGE = 'data:image/png;base64,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';
+      const $ = id => document.getElementById(id);
+      const order = $('order-dialog'), qrDialog = $('qr-dialog'), fields = $('phone-fields');
+      let fieldSequence = 0, lastFocus = null, toastTimer;
+      document.querySelectorAll('.qris-image').forEach(img => {img.src = QRIS_IMAGE;});
+      $('save-qr').href = QRIS_IMAGE;
+      function syncFields(){
+        const rows = [...fields.children];
+        rows.forEach((row,i)=>{row.querySelector('label').textContent = 'Nomor HP '+(i+1);row.querySelector('.remove').setAttribute('aria-label','Hapus nomor '+(i+1));row.querySelector('.remove').hidden = rows.length===1;});
+        $('phone-counter').textContent = rows.length+' dari 3 nomor';
+        $('add-phone').disabled = rows.length>=3;
+        $('add-phone').textContent = rows.length>=3?'Maksimal 3 nomor':'＋ Tambah nomor';
       }
-    ];
-
-    const bankAccounts = [
-      {
-        name: "Bank Jago",
-        code: "Kode bank 542",
-        number: "1006 4533 1871",
-        copy: "100645331871",
-        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEicp5KjFo3ZeLilov-1mOt_bH5x-Wbb5Xslnu4BeGJFNC66xaJU6GzXP6V101Q7Jm4sLII7iJ-6towfvzPTenVDHKM3pSRUg-f3PbkDSSNnux45W1wVmNQiqntiBX8ifEuXNUuHquRa8z9lmM0t4ua8bL6_30bVOt5614DGMtNhseV3_X1pRe-7icK1lBWX"
-      },
-      {
-        name: "SeaBank",
-        code: "Kode bank 535",
-        number: "9013 7594 0437",
-        copy: "901375940437",
-        logo: "https://blogger.googleusercontent.com/img/a/AVvXsEi18PxWNHMFpvNCr707T_va5y6AkUoOnJkGJy7jXB3CwowK5DcSvDLANFHk9CEy8mthpHUtDVeRQkZXjNLTksJUPrfyoEdoK94WgLNaNmtTJ4Kq46BUxBJXCQACinJSgyRz0lc_1-XUt_EGr-O--Uwh86_h3XiV-axvrWON0HTeQoRtYVGSOI9tyzC8CxRO"
+      function addPhone(focus=true){
+        if(fields.children.length>=3)return;
+        const id='phone-'+(++fieldSequence), row=document.createElement('div');row.className='phone-row';
+        row.innerHTML='<label for="'+id+'"></label><div class="field-wrap"><input id="'+id+'" type="tel" inputmode="tel" autocomplete="off" placeholder="08xx xxxx xxxx" maxlength="28" required aria-describedby="'+id+'-error"><button class="remove" type="button">×</button></div><span class="error" id="'+id+'-error" aria-live="polite"></span>';
+        const input=row.querySelector('input');
+        input.addEventListener('input',()=>{input.removeAttribute('aria-invalid');row.querySelector('.error').textContent='';});
+        row.querySelector('.remove').addEventListener('click',()=>{row.remove();syncFields();fields.lastElementChild.querySelector('input').focus();});
+        fields.append(row);syncFields();if(focus)input.focus();
       }
-    ];
-
-    const content = document.querySelector("#content");
-    const toast = document.querySelector("#toast");
-    const methodModal = document.querySelector("#methodModal");
-    const modalSheet = document.querySelector("#modalSheet");
-    let toastTimer = null;
-
-    function viewHeader(label, title, description) {
-      return `
-        <header class="view-header">
-          <span class="eyebrow">${label}</span>
-          <h1>${title}</h1>
-          <p>${description}</p>
-        </header>`;
-    }
-
-    function ownerBox() {
-      return `
-        <div class="owner-box">
-          <span class="owner-icon">✓</span>
-          <div>
-            <small>SEMUA ATAS NAMA</small>
-            <strong>${OWNER_NAME}</strong>
-          </div>
-        </div>`;
-    }
-
-    function qrisOwnerBox() {
-      return `
-        <div class="owner-box">
-          <span class="owner-icon">✓</span>
-          <div>
-            <small>ATAS NAMA QRIS</small>
-            <strong>Babayshop.id</strong>
-          </div>
-        </div>`;
-    }
-
-    function accountCard(account) {
-      return `
-        <article class="account">
-          <img class="account-logo" src="${account.logo}" alt="Logo ${account.name}" loading="lazy">
-          <div class="account-info">
-            <div class="account-name">
-              <strong>${account.name}</strong>
-              ${account.code ? `<span class="bank-code">${account.code}</span>` : ""}
-            </div>
-            <div class="account-number">${account.number}</div>
-            <div class="account-owner">a.n. ${OWNER_NAME}</div>
-          </div>
-          <button class="copy-button" type="button" data-copy="${account.copy}" data-label="${account.name}" aria-label="Salin nomor ${account.name}">
-            Salin
-          </button>
-        </article>`;
-    }
-
-    function render(view) {
-      document.querySelectorAll("[data-view]").forEach(button => {
-        const active = button.dataset.view === view;
-        button.classList.toggle("active", active);
-        button.setAttribute("aria-current", active ? "page" : "false");
+      function normalizePhone(raw){
+        const value=raw.trim();
+        if(!value)throw new Error('Isi nomor HP ini, atau hapus kolom yang tidak digunakan.');
+        if(!/^\+?[\d\s().-]+$/.test(value))throw new Error('Gunakan angka nomor HP, tanpa huruf atau simbol lainnya.');
+        let clean=value.replace(/[\s().-]/g,'');
+        if(clean.startsWith('08'))clean='+62'+clean.slice(1);
+        else if(clean.startsWith('62'))clean='+'+clean;
+        else if(!clean.startsWith('+'))throw new Error('Gunakan awalan 08, 62, atau kode negara seperti +62.');
+        if(clean.startsWith('+62')){if(!/^\+628\d{8,11}$/.test(clean))throw new Error('Nomor HP Indonesia harus 10–13 digit dalam format 08.');}
+        else if(!/^\+[1-9]\d{6,14}$/.test(clean))throw new Error('Periksa kode negara dan panjang nomor HP (7–15 digit).');
+        return clean;
+      }
+      function makeMessage(numbers){return 'Halo BabayShop.id, saya ingin minta jasa cek nomor via Getcontact.\nNomor yang ingin dicek:\n\n'+numbers.map(n=>n.replace(/^\+/, '')).join('\n')+'\n\nMohon bantu cek tag yang tersedia ya, Kak. Terima kasih!';}
+      function showEntry(){ $('entry-step').hidden=false;$('review-step').hidden=true;$('progress-two').classList.remove('on');order.setAttribute('aria-labelledby','order-title');fields.querySelector('input').focus();order.scrollTop=0; }
+      function openOrder(){lastFocus=document.activeElement;order.showModal();document.body.classList.add('modal-open');fields.querySelector('input').focus();}
+      $('open-order').addEventListener('click',()=>{showEntry();openOrder();});
+      $('close-order').addEventListener('click',()=>order.close());
+      order.addEventListener('close',()=>{document.body.classList.remove('modal-open');if(lastFocus&&lastFocus!==document.body)lastFocus.focus();else $('open-order').focus();});
+      $('add-phone').addEventListener('click',()=>addPhone());
+      $('back-entry').addEventListener('click',showEntry);
+      $('number-form').addEventListener('submit',event=>{
+        event.preventDefault();const numbers=[],seen=new Set();let firstInvalid=null;
+        [...fields.querySelectorAll('input')].forEach(input=>{
+          const error=$(input.id+'-error');error.textContent='';input.removeAttribute('aria-invalid');
+          try{const number=normalizePhone(input.value);if(seen.has(number))throw new Error('Nomor ini sudah diisi. Gunakan nomor lain atau hapus kolom ini.');seen.add(number);numbers.push(number);}
+          catch(e){error.textContent=e.message;input.setAttribute('aria-invalid','true');firstInvalid=firstInvalid||input;}
+        });
+        if(firstInvalid){firstInvalid.focus();return;}
+        const message=makeMessage(numbers);$('message').value=message;$('send-wa').href='https://wa.me/'+ADMIN_WHATSAPP+'?text='+encodeURIComponent(message);
+        $('entry-step').hidden=true;$('review-step').hidden=false;$('progress-two').classList.add('on');order.setAttribute('aria-labelledby','review-title');order.scrollTop=0;$('review-title').focus();
       });
-
-      document.querySelectorAll("[data-select-method]").forEach(option => {
-        option.classList.toggle("current", option.dataset.selectMethod === view);
+      function toast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2800);}
+      $('copy-message').addEventListener('click',async()=>{
+        try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText($('message').value);else{$('message').focus();$('message').select();if(!document.execCommand('copy'))throw new Error('copy');}toast('Pesan berhasil disalin.');}
+        catch(e){$('message').focus();$('message').select();toast('Pilih Salin di perangkatmu untuk menyalin pesan.');}
       });
-
-      if (view === "qris") {
-        content.innerHTML = `
-          <div class="view">
-            ${viewHeader("QRIS", "Bayar lebih praktis", "Scan kode QR menggunakan aplikasi m-banking atau e-wallet pilihan Anda.")}
-            <div class="qris-layout">
-              <div class="qris-box">
-                <img src="${QRIS_IMAGE}" alt="Kode QRIS BabayShop.id">
-              </div>
-              <div class="instruction">
-                <h2>Cara Bayar QRIS</h2>
-                <p>Buka aplikasi pembayaran di HP Anda, scan kode QR, lalu masukkan nominal sesuai transaksi.</p>
-                <ol class="steps-list">
-                  <li><span class="step-badge">1</span><span>Screenshot atau scan langsung kode QRIS</span></li>
-                  <li><span class="step-badge">2</span><span>Pastikan penerima <strong>Babayshop.id</strong></span></li>
-                  <li><span class="step-badge">3</span><span>Simpan bukti pembayaran Anda</span></li>
-                </ol>
-                ${qrisOwnerBox()}
-              </div>
-            </div>
-          </div>`;
-      } else if (view === "ewallet" || view === "bank") {
-        const isWallet = view === "ewallet";
-        const accounts = isWallet ? ewalletAccounts : bankAccounts;
-        content.innerHTML = `
-          <div class="view">
-            ${viewHeader(
-              isWallet ? "E-WALLET" : "TRANSFER BANK",
-              isWallet ? "Pilih E-Wallet" : "Pilih Rekening Bank",
-              `Ketuk tombol Salin dan pastikan nama penerima tercantum sebagai ${OWNER_NAME}.`
-            )}
-            <div class="account-list">
-              ${accounts.map(accountCard).join("")}
-            </div>
-            ${ownerBox()}
-          </div>`;
-      } else {
-        content.innerHTML = `
-          <div class="view">
-            ${viewHeader("ADMIN", "Butuh bantuan?", "Hubungi admin resmi BabayShop.id untuk konfirmasi atau kendala pembayaran.")}
-            <div class="admin-panel">
-              <img class="admin-logo" src="${SHOP_LOGO}" alt="Logo BabayShop">
-              <h2>Admin BabayShop</h2>
-              <strong class="admin-phone">${ADMIN_PHONE_DISPLAY}</strong>
-              <p>Kami siap membantu verifikasi dan proses pembayaran Anda dengan cepat.</p>
-              <a class="whatsapp-button" href="https://wa.me/${ADMIN_PHONE_WHATSAPP}" target="_blank" rel="noopener noreferrer">
-                <span>Chat WhatsApp Sekarang</span>
-                <span>↗</span>
-              </a>
-            </div>
-          </div>`;
-      }
-
-      try {
-        history.replaceState(null, "", `#${view}`);
-      } catch (e) {}
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function fallbackCopyText(text) {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-        document.execCommand("copy");
-      } catch (e) {}
-      document.body.removeChild(textarea);
-    }
-
-    async function copyNumber(button) {
-      const numberToCopy = button.dataset.copy;
-      const label = button.dataset.label || "Rekening";
-
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(numberToCopy);
-        } else {
-          fallbackCopyText(numberToCopy);
-        }
-      } catch {
-        fallbackCopyText(numberToCopy);
-      }
-
-      const originalText = button.textContent;
-      button.textContent = "Tersalin ✓";
-      button.classList.add("copied");
-      window.setTimeout(() => {
-        button.textContent = originalText;
-        button.classList.remove("copied");
-      }, 1500);
-
-      toast.textContent = `✓ Nomor ${label} berhasil disalin`;
-      toast.classList.add("show");
-      if (toastTimer) window.clearTimeout(toastTimer);
-      toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2000);
-    }
-
-    function openMethodModal() {
-      modalSheet.style.transform = "";
-      methodModal.classList.add("open");
-      document.body.classList.add("modal-lock");
-    }
-
-    function closeMethodModal() {
-      modalSheet.style.transform = "";
-      methodModal.classList.remove("open");
-      document.body.classList.remove("modal-lock");
-    }
-
-    document.addEventListener("click", event => {
-      const navigationButton = event.target.closest("[data-view]");
-      const copyButton = event.target.closest("[data-copy]");
-      const selectMethodButton = event.target.closest("[data-select-method]");
-      const openBtn = event.target.closest("#openModalBtn");
-      const closeBtn = event.target.closest("#closeModalBtn");
-
-      if (navigationButton) {
-        render(navigationButton.dataset.view);
-      }
-
-      if (copyButton) {
-        copyNumber(copyButton);
-      }
-
-      if (selectMethodButton) {
-        selectMethodButton.classList.add("tapped");
-        const chosen = selectMethodButton.dataset.selectMethod;
-        window.setTimeout(() => {
-          selectMethodButton.classList.remove("tapped");
-          render(chosen);
-          closeMethodModal();
-        }, 130);
-      }
-
-      if (openBtn) {
-        openMethodModal();
-      }
-
-      if (closeBtn || event.target === methodModal) {
-        closeMethodModal();
-      }
-    });
-
-    /* Gesture Swipe-Down pada Bottom Sheet Mobile */
-    let startY = 0;
-    let currentY = 0;
-    let isDragging = false;
-
-    modalSheet.addEventListener("touchstart", event => {
-      startY = event.touches[0].clientY;
-      currentY = startY;
-      isDragging = true;
-      modalSheet.classList.add("dragging");
-    }, { passive: true });
-
-    modalSheet.addEventListener("touchmove", event => {
-      if (!isDragging) return;
-      currentY = event.touches[0].clientY;
-      const deltaY = currentY - startY;
-      if (deltaY > 0) {
-        modalSheet.style.transform = `translateY(${deltaY}px)`;
-      } else {
-        modalSheet.style.transform = `translateY(${deltaY * 0.18}px)`;
-      }
-    }, { passive: true });
-
-    modalSheet.addEventListener("touchend", () => {
-      if (!isDragging) return;
-      isDragging = false;
-      modalSheet.classList.remove("dragging");
-      const deltaY = currentY - startY;
-      if (deltaY > 75) {
-        closeMethodModal();
-      } else {
-        modalSheet.style.transform = "";
-      }
-    });
-
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && methodModal.classList.contains("open")) {
-        closeMethodModal();
-      }
-    });
-
-    const requestedView = window.location.hash.slice(1);
-    const validViews = ["qris", "ewallet", "bank", "admin"];
-    render(validViews.includes(requestedView) ? requestedView : "qris");
-
-    /* Munculkan pop-up secara halus saat halaman pertama kali dibuka */
-    window.requestAnimationFrame(() => {
-      window.setTimeout(openMethodModal, 80);
-    });
-  </script>
-</body>
+      $('enlarge-qr').addEventListener('click',()=>qrDialog.showModal());$('qr-thumbnail').addEventListener('click',()=>qrDialog.showModal());$('close-qr').addEventListener('click',()=>qrDialog.close());
+      function tick(){const now=new Date();$('clock').textContent=new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now).replace(/\./g,':')+' WIB';$('year').textContent=new Intl.DateTimeFormat('en',{timeZone:'Asia/Jakarta',year:'numeric'}).format(now);}
+      tick();setInterval(tick,1000);addPhone(false);openOrder();
+    </script>
+  </body>
 </html>
