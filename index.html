@@ -756,6 +756,42 @@
       .qr-dialog .button{
         box-shadow:none
       }
+
+      .support-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .support-actions .button {
+        padding: 14px 10px;
+        font-size: 14px;
+      }
+      .button.secondary {
+        background: #ffffff;
+        border-color: #c4d9ef;
+        color: var(--accent);
+        box-shadow: none;
+      }
+      .button.secondary:hover { background: #e8f2ff; }
+      .back-row { gap: 24px; flex-wrap: wrap; }
+      .support-thanks {
+        margin-bottom: 18px;
+        padding: 12px 14px;
+        background: #edf6ff;
+        border-radius: 10px;
+        color: #285b90;
+        font-size: 12px;
+      }
+      .urgent-note {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border: 1px solid #c4dffb;
+        border-radius: 10px;
+        background: #edf6ff;
+        color: #285b90;
+        font-size: 12px;
+        line-height: 1.6;
+      }
     </style>
   </head>
   <body>
@@ -844,17 +880,17 @@
             </article>
             <article class="step">
               <div class="num">
-                02 / KIRIM KE WHATSAPP
+                02 / SUPPORT ADMIN
               </div>
-              <h3>Pesannya sudah disiapkan.</h3>
-              <p>Klik Langsung Cek Nomor untuk membuka WhatsApp admin dengan pesan yang otomatis terisi. Pesannya juga bisa kamu salin.</p>
+              <h3>Nominalnya kamu tentukan.</h3>
+              <p>Scan QRIS dengan nominal seikhlasnya. Pilih Sudah Support, atau Lewati untuk langsung meninjau pesan.</p>
             </article>
             <article class="step">
               <div class="num">
-                03 / SUPPORT ADMIN
+                03 / TINJAU & KIRIM
               </div>
-              <h3>Nominalnya kamu tentukan.</h3>
-              <p>Kalau berkenan, scan QRIS untuk support seikhlasnya. QRIS bisa diperbesar atau disimpan. Kirim bukti transfer lewat chat admin.</p>
+              <h3>Pesannya sudah disiapkan.</h3>
+              <p>Periksa nomornya, lalu klik Langsung Cek Nomor. WhatsApp terbuka dengan pesan yang sudah terisi, tinggal kirim.</p>
             </article>
           </div>
         </section>
@@ -895,10 +931,11 @@
         <div class="progress" aria-hidden="true">
           <i class="on"></i>
           <i id="progress-two"></i>
+          <i id="progress-three"></i>
         </div>
         <section id="entry-step">
           <div class="step-label">
-            Langkah 01 / 02
+            Langkah 01 / 03
           </div>
           <h2 class="dialog-title" id="order-title">Mau cek nomor siapa?</h2>
           <p class="intro">Masukkan nomor HP yang ingin dicek via Getcontact. Bisa sampai 3 nomor dalam sekali pesan.</p>
@@ -914,12 +951,10 @@
             <p class="bottom-note">Nomor baru diteruskan saat kamu mengirim pesan di WhatsApp.</p>
           </form>
         </section>
-        <section id="review-step" hidden>
-          <div class="step-label">
-            Langkah 02 / 02
-          </div>
-          <h2 class="dialog-title" id="review-title" tabindex="-1">Tinggal kirim ke admin.</h2>
-          <p class="intro">Pesanmu sudah siap. Klik Langsung Cek Nomor untuk membuka WhatsApp admin dengan pesan yang sudah terisi.</p>
+        <section id="support-step" hidden>
+          <div class="step-label">Langkah 02 / 03</div>
+          <h2 class="dialog-title" id="support-title" tabindex="-1">Support seikhlasnya.</h2>
+          <p class="intro">Kalau berkenan, scan QRIS untuk bantu support admin. Kamu juga bisa lewati tahap ini.</p>
           <div class="payment">
             <div class="pay-head">
               <strong>Support Admin</strong>
@@ -934,6 +969,21 @@
               <button class="text-button" id="enlarge-qr">Perbesar QRIS</button>
             </div>
           </div>
+          <div class="support-actions">
+            <button class="button secondary" id="skip-support" type="button">Lewati</button>
+            <button class="button" id="done-support" type="button">Sudah Support</button>
+          </div>
+          <div class="back-row">
+            <button class="text-button" id="support-back-entry" type="button">← Ubah nomor</button>
+          </div>
+        </section>
+        <section id="review-step" hidden>
+          <div class="step-label">
+            Langkah 03 / 03
+          </div>
+          <h2 class="dialog-title" id="review-title" tabindex="-1">Tinjau pesanmu.</h2>
+          <p class="intro">Pastikan nomornya sudah benar, lalu klik Langsung Cek Nomor untuk membuka WhatsApp admin.</p>
+          <p class="support-thanks" id="support-thanks" hidden>Terima kasih sudah support! Lampirkan bukti transfer di chat admin ya.</p>
           <div class="review-head">
             <label for="message">Pesan untuk admin</label>
             <button class="text-button" id="copy-message">Salin pesan</button>
@@ -943,8 +993,10 @@
             <a class="button wa full" id="send-wa" href="https://wa.me/6281523984574" target="_blank" rel="noopener noreferrer">Langsung Cek Nomor <svg aria-hidden="true"><use href="#arrow"/></svg></a>
           </div>
           <p class="bottom-note">Pesan terisi otomatis. Tinggal tekan Kirim di WhatsApp.<br>Admin · 0815-2398-4574</p>
+          <p class="urgent-note">Kalau mendesak dan ingin nomornya segera dicek, boleh telepon admin lewat WhatsApp ya.</p>
           <div class="back-row">
-            <button class="text-button" id="back-entry">← Ubah nomor</button>
+            <button class="text-button" id="back-support" type="button">← Kembali ke QRIS</button>
+            <button class="text-button" id="back-entry" type="button">Ubah nomor</button>
           </div>
         </section>
         <div class="toast" id="toast" role="status" hidden>
@@ -972,6 +1024,7 @@
       const $ = id => document.getElementById(id);
       const order = $('order-dialog'), qrDialog = $('qr-dialog'), fields = $('phone-fields');
       let fieldSequence = 0, lastFocus = null, toastTimer;
+      let checkedNumbers = [];
       document.querySelectorAll('.qris-image').forEach(img => {img.src = QRIS_IMAGE;});
       $('save-qr').href = QRIS_IMAGE;
       function syncFields(){
@@ -1002,14 +1055,42 @@
         else if(!/^\+[1-9]\d{6,14}$/.test(clean))throw new Error('Periksa kode negara dan panjang nomor HP (7–15 digit).');
         return clean;
       }
-      function makeMessage(numbers){return 'Halo BabayShop.id, saya ingin minta jasa cek nomor via Getcontact.\nNomor yang ingin dicek:\n\n'+numbers.map(n=>n.replace(/^\+/, '')).join('\n')+'\n\nMohon bantu cek tag yang tersedia ya, Kak. Terima kasih!';}
-      function showEntry(){ $('entry-step').hidden=false;$('review-step').hidden=true;$('progress-two').classList.remove('on');order.setAttribute('aria-labelledby','order-title');fields.querySelector('input').focus();order.scrollTop=0; }
+      function makeMessage(numbers, supported = false) {
+        const numberList = numbers.map(number => number.replace(/^\+/, '')).join('\n');
+        const supportNote = supported ? '\n\nSaya sudah memberikan support melalui QRIS ya, Kak.' : '';
+        return 'Halo BabayShop.id, saya ingin minta jasa cek nomor via Getcontact.\nNomor yang ingin dicek:\n\n'
+          + numberList + supportNote
+          + '\n\nMohon bantu cek tag yang tersedia ya, Kak. Terima kasih!';
+      }
+      function showStep(step) {
+        const stepIds = ['entry-step', 'support-step', 'review-step'];
+        const titleIds = ['order-title', 'support-title', 'review-title'];
+        stepIds.forEach((id, index) => { $(id).hidden = index !== step - 1; });
+        $('progress-two').classList.toggle('on', step >= 2);
+        $('progress-three').classList.toggle('on', step >= 3);
+        order.setAttribute('aria-labelledby', titleIds[step - 1]);
+        const focusTarget = step === 1 ? fields.querySelector('input') : $(titleIds[step - 1]);
+        focusTarget.focus({ preventScroll: true });
+        order.scrollTop = 0;
+      }
+      function showEntry() { showStep(1); }
+      function showReview(supported) {
+        const message = makeMessage(checkedNumbers, supported);
+        $('message').value = message;
+        $('send-wa').href = 'https://wa.me/' + ADMIN_WHATSAPP + '?text=' + encodeURIComponent(message);
+        $('support-thanks').hidden = !supported;
+        showStep(3);
+      }
       function openOrder(){lastFocus=document.activeElement;order.showModal();document.body.classList.add('modal-open');fields.querySelector('input').focus();}
       $('open-order').addEventListener('click',()=>{showEntry();openOrder();});
       $('close-order').addEventListener('click',()=>order.close());
       order.addEventListener('close',()=>{document.body.classList.remove('modal-open');if(lastFocus&&lastFocus!==document.body)lastFocus.focus();else $('open-order').focus();});
       $('add-phone').addEventListener('click',()=>addPhone());
-      $('back-entry').addEventListener('click',showEntry);
+      $('back-entry').addEventListener('click', showEntry);
+      $('support-back-entry').addEventListener('click', showEntry);
+      $('back-support').addEventListener('click', () => showStep(2));
+      $('skip-support').addEventListener('click', () => showReview(false));
+      $('done-support').addEventListener('click', () => showReview(true));
       $('number-form').addEventListener('submit',event=>{
         event.preventDefault();const numbers=[],seen=new Set();let firstInvalid=null;
         [...fields.querySelectorAll('input')].forEach(input=>{
@@ -1018,8 +1099,9 @@
           catch(e){error.textContent=e.message;input.setAttribute('aria-invalid','true');firstInvalid=firstInvalid||input;}
         });
         if(firstInvalid){firstInvalid.focus();return;}
-        const message=makeMessage(numbers);$('message').value=message;$('send-wa').href='https://wa.me/'+ADMIN_WHATSAPP+'?text='+encodeURIComponent(message);
-        $('entry-step').hidden=true;$('review-step').hidden=false;$('progress-two').classList.add('on');order.setAttribute('aria-labelledby','review-title');order.scrollTop=0;$('review-title').focus();
+        checkedNumbers = numbers;
+        $('support-thanks').hidden = true;
+        showStep(2);
       });
       function toast(text){clearTimeout(toastTimer);$('toast').textContent=text;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,2800);}
       $('copy-message').addEventListener('click',async()=>{
